@@ -7,5 +7,6 @@ import pl.medm.javadev.model.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    User findByEmailOrIndexNumber(String emailOrIndexNumber);
+    User findByEmail(String email);
+    boolean existsByEmail(String email);
 }

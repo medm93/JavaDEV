@@ -1,11 +1,7 @@
 package pl.medm.javadev.model;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
-
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Objects;
 
 @Entity
 public class User {
@@ -13,32 +9,25 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotEmpty
     private String firstName;
-    @NotEmpty
     private String lastName;
-    @NotEmpty
-    @Email
     private String email;
     private String password;
     private String yearOfStudy;
     private String fieldOfStudy;
     private String indexNumber;
 
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    private Set<UserRole> roles = new HashSet<>();
-
     public User() {
     }
 
-    public User(@NotEmpty String firstName, @NotEmpty String lastName, @NotEmpty @Email String email, String password) {
+    public User(String firstName, String lastName, String email, String password) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
     }
 
-    public User(@NotEmpty String firstName, @NotEmpty String lastName, @NotEmpty @Email String email, String password, String yearOfStudy, String fieldOfStudy, String indexNumber) {
+    public User(String firstName, String lastName, String email, String password, String yearOfStudy, String fieldOfStudy, String indexNumber) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -112,11 +101,30 @@ public class User {
         this.indexNumber = indexNumber;
     }
 
-    public Set<UserRole> getRoles() {
-        return roles;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(email, user.email);
     }
 
-    public void setRoles(Set<UserRole> roles) {
-        this.roles = roles;
+    @Override
+    public int hashCode() {
+        return Objects.hash(email);
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", yearOfStudy='" + yearOfStudy + '\'' +
+                ", fieldOfStudy='" + fieldOfStudy + '\'' +
+                ", indexNumber='" + indexNumber + '\'' +
+                '}';
     }
 }
