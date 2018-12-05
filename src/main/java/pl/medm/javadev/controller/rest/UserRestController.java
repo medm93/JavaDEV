@@ -10,7 +10,7 @@ import pl.medm.javadev.service.UserService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/app/users")
 public class UserRestController {
 
     private final UserService userService;

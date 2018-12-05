@@ -2,6 +2,8 @@ package pl.medm.javadev.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -17,6 +19,8 @@ public class User implements Serializable {
     private String yearOfStudy;
     private String fieldOfStudy;
     private String indexNumber;
+    @ManyToMany(mappedBy = "users")
+    private List<Lecture> lectures = new ArrayList<>();
 
     public User() {
     }
@@ -102,6 +106,14 @@ public class User implements Serializable {
         this.indexNumber = indexNumber;
     }
 
+    public List<Lecture> getLectures() {
+        return lectures;
+    }
+
+    public void setLectures(List<Lecture> lectures) {
+        this.lectures = lectures;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -126,6 +138,7 @@ public class User implements Serializable {
                 ", yearOfStudy='" + yearOfStudy + '\'' +
                 ", fieldOfStudy='" + fieldOfStudy + '\'' +
                 ", indexNumber='" + indexNumber + '\'' +
+                ", lectures=" + lectures +
                 '}';
     }
 }
