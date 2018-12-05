@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Users</title>
+</head>
+<body>
+
+<div>
+    <h1>All users:</h1>
+    <table border="1">
+        <tr>
+            <th>FIRST NAME</th>
+            <th>LAST NAME</th>
+            <th>EMAIL</th>
+            <th>YEAR OF STUDY</th>
+            <th>FIELD OF STUDY</th>
+            <th>INDEX NUMBER</th>
+        </tr>
+        <tr th:each="user : ${users}" th:object="${user}">
+            <td th:text="*{firstName}"></td>
+            <td th:text="*{lastName}"></td>
+            <td th:text="*{email}"></td>
+            <td th:text="*{yearOfStudy}"></td>
+            <td th:text="*{fieldOfStudy}"></td>
+            <td th:text="*{indexNumber}"></td>
+            <td><p><a href="#" th:href="@{/users/*{id}"></td>
+        </tr>
+    </table>
+        <li th:each="name: ${names}" th:text="${name}"></li>
+    </ul>
+    <p><a href="#" th:href="@{/}">Back to home</a></p>
+</div>
+
+</body>
+</html>
