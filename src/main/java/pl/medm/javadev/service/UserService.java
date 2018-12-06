@@ -4,12 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pl.medm.javadev.model.User;
 import pl.medm.javadev.repository.UserRepository;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -21,32 +23,73 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<User> findAll() {
+    public List<User> findAllUsers() {
         return userRepository.findAll();
     }
 
-    public ResponseEntity<?> createUser(User user) {
+    public ResponseEntity<?> createUser(User user, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest().body(result.getAllErrors());
+        }
+
         if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        } else {
-            Long id = userRepository.save(user).getId();
-            URI location = ServletUriComponentsBuilder
-                    .fromCurrentRequest()
-                    .path("/{id}")
-                    .buildAndExpand(id)
-                    .toUri();
-            return ResponseEntity.created(location).body(user);
         }
+
+        Long id = userRepository.save(user).getId();
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri();
+        return ResponseEntity.created(location).body(user);
     }
 
-    public ResponseEntity<?> getUser(Long id) {
+    public ResponseEntity<?> findUserById(Long id) {
         return userRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    public ResponseEntity<?> deleteUser(Long id) {
-        if(userRepository.existsById(id)) {
+    public ResponseEntity<?> updateUserData(Long id, User user, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest().body(result.getAllErrors());
+        }
+
+        Optional<User> searchResult = userRepository.findById(id);
+        if (searchResult.isPresent()) {
+            User userInDB = searchResult.get();
+            userInDB.setFirstName(user.getFirstName());
+            userInDB.setLastName(user.getLastName());
+            userInDB.setEmail(user.getEmail());
+            userInDB.setYearOfStudy(user.getYearOfStudy());
+            userInDB.setFieldOfStudy(user.getFieldOfStudy());
+            userInDB.setIndexNumber(user.getIndexNumber());
+            userRepository.save(userInDB);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    public ResponseEntity<?> updateUserPassword(Long id, User user, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest().body(result.getAllErrors());
+        }
+
+        Optional<User> searchResult = userRepository.findById(id);
+        if (searchResult.isPresent()) {
+            User userInDB = searchResult.get();
+            userInDB.setPassword(user.getPassword());
+            userRepository.save(userInDB);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    public ResponseEntity<?> deleteUserById(Long id) {
+        if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
             return ResponseEntity.noContent().build();
         } else {

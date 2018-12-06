@@ -1,6 +1,12 @@
 package pl.medm.javadev.model;
 
+import pl.medm.javadev.constraint.Password;
+import pl.medm.javadev.constraint.group.UserData;
+import pl.medm.javadev.constraint.group.UserPassword;
+
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +18,29 @@ public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotEmpty(
+            message = "pl.medm.javadev.model.User.firstName.NotEmpty",
+            groups = {UserData.class}
+    )
     private String firstName;
+    @NotEmpty(
+            message = "pl.medm.javadev.model.User.lastName.NotEmpty",
+            groups = {UserData.class}
+    )
     private String lastName;
+    @Email(
+            message = "pl.medm.javadev.model.User.email.Email",
+            groups = {UserData.class}
+    )
+    @NotEmpty(
+            message = "pl.medm.javadev.model.User.email.NotEmpty",
+            groups = {UserData.class}
+    )
     private String email;
+    @Password(
+            message = "pl.medm.javadev.model.User.password.Password",
+            groups = UserPassword.class
+    )
     private String password;
     private String yearOfStudy;
     private String fieldOfStudy;
