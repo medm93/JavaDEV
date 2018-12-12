@@ -8,6 +8,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pl.medm.javadev.model.Lecture;
 import pl.medm.javadev.model.User;
 import pl.medm.javadev.repository.LectureRepository;
+import pl.medm.javadev.repository.UserRepository;
 
 import java.net.URI;
 import java.util.List;
@@ -17,10 +18,12 @@ import java.util.Optional;
 public class LectureService {
 
     private LectureRepository lectureRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    public LectureService(LectureRepository lectureRepository) {
+    public LectureService(LectureRepository lectureRepository, UserRepository userRepository) {
         this.lectureRepository = lectureRepository;
+        this.userRepository = userRepository;
     }
 
     public List<Lecture> getAllLectures() {
@@ -81,20 +84,23 @@ public class LectureService {
         }
     }
 
-    public ResponseEntity<User> saveUser(Long id, User user) {
-        if (lectureRepository.existsById(id)) {
-            Lecture lecture = lectureRepository.findById(id).get();
-            lecture.getUsers().add(user);
-            lectureRepository.save(lecture);
-            URI location = ServletUriComponentsBuilder
-                    .fromCurrentRequest()
-                    .path("/{id}")
-                    .buildAndExpand(user.getId())
-                    .toUri();
-            return ResponseEntity.created(location).body(user);
-        } else {
+    public ResponseEntity<User> saveUserToLecture(Long id, User user) {
+        Optional<Lecture> lectureSearchResult = lectureRepository.findById(id);
+        Optional<User> userSearchResult = userRepository.findById(user.getId());
+
+        if (!lectureSearchResult.isPresent() || !userSearchResult.isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
+
+        Lecture lecture = lectureSearchResult.get();
+        lecture.addUser(userSearchResult.get());
+        lectureRepository.save(lecture);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(userSearchResult.get().getId())
+                .toUri();
+        return ResponseEntity.created(location).body(userSearchResult.get());
     }
 
 

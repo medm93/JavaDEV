@@ -1,5 +1,7 @@
 package pl.medm.javadev.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,12 +18,12 @@ public class Lecture implements Serializable {
     private String description;
     private String lecturer;
     private Boolean completed;
-    @ManyToMany
-    @JoinTable(
-            name = "attendance",
-            joinColumns = {@JoinColumn(name="lecture_id", referencedColumnName="id")},
-            inverseJoinColumns = {@JoinColumn(name="user_id", referencedColumnName="id")}
+    @ManyToMany(
+            fetch = FetchType.LAZY,
+            cascade = {CascadeType.ALL},
+            mappedBy = "lectures"
     )
+    @JsonIgnore
     private List<User> users = new ArrayList<>();
 
     public Lecture() {

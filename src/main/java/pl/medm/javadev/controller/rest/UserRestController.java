@@ -15,7 +15,7 @@ import pl.medm.javadev.service.UserService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/app/users")
+@RequestMapping("/users")
 public class UserRestController {
 
     private final UserService userService;
@@ -25,16 +25,17 @@ public class UserRestController {
         this.userService = userService;
     }
 
-    //find all users
+    //A wyświetlanie wszystkich użytkowników
     @GetMapping
     public List<User> findAllUsers() {
         return userService.findAllUsers();
     }
 
-    //create user
+    //A dodanie konta studenta
     @PostMapping
     public ResponseEntity<?> saveUser(@Validated(UserRegistration.class) @RequestBody User user,
                                          BindingResult result) {
+        System.out.println(user);
         return userService.createUser(user, result);
     }
 
@@ -45,21 +46,29 @@ public class UserRestController {
     }
 
 
-    //update user data
-    @PutMapping(path = "/{id}/data")
+    @GetMapping(path = "/{id}/lectures", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> findAllLecturesByUserId(@PathVariable Long id) {
+        return userService.findAllLecturesByUserId(id);
+    }
+
+
+    //U edytuj informacje o sobie
+    //A edycja informacji o studencie
+    @PutMapping(path = "/{id}")
     public ResponseEntity<?> updateUserData(@PathVariable Long id, @Validated(UserData.class) @RequestBody User user,
                                                BindingResult result) {
         return userService.updateUserData(id, user, result);
     }
 
-    //update user password
+    //U zmień hasło
+    //A zmiana hasła studenta
     @PutMapping(path = "/{id}/password")
     public ResponseEntity<?> updateUserPassword(@PathVariable Long id, @Validated(UserPassword.class) @RequestBody User user,
                                                    BindingResult result) {
         return userService.updateUserPassword(id, user, result);
     }
 
-    //delete user by id
+    //A usunięcie studenta
     @DeleteMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteUserById(@PathVariable Long id) {
         return userService.deleteUserById(id);

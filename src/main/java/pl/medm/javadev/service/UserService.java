@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import pl.medm.javadev.model.Lecture;
 import pl.medm.javadev.model.User;
 import pl.medm.javadev.repository.UserRepository;
 
@@ -57,19 +58,18 @@ public class UserService {
         }
 
         Optional<User> searchResult = userRepository.findById(id);
-        if (searchResult.isPresent()) {
-            User userInDB = searchResult.get();
-            userInDB.setFirstName(user.getFirstName());
-            userInDB.setLastName(user.getLastName());
-            userInDB.setEmail(user.getEmail());
-            userInDB.setYearOfStudy(user.getYearOfStudy());
-            userInDB.setFieldOfStudy(user.getFieldOfStudy());
-            userInDB.setIndexNumber(user.getIndexNumber());
-            userRepository.save(userInDB);
-            return ResponseEntity.noContent().build();
-        } else {
+        if (!searchResult.isPresent()) {
             return ResponseEntity.notFound().build();
         }
+        User userInDB = searchResult.get();
+        userInDB.setFirstName(user.getFirstName());
+        userInDB.setLastName(user.getLastName());
+        userInDB.setEmail(user.getEmail());
+        userInDB.setYearOfStudy(user.getYearOfStudy());
+        userInDB.setFieldOfStudy(user.getFieldOfStudy());
+        userInDB.setIndexNumber(user.getIndexNumber());
+        userRepository.save(userInDB);
+        return ResponseEntity.noContent().build();
     }
 
     public ResponseEntity<?> updateUserPassword(Long id, User user, BindingResult result) {
@@ -78,14 +78,13 @@ public class UserService {
         }
 
         Optional<User> searchResult = userRepository.findById(id);
-        if (searchResult.isPresent()) {
-            User userInDB = searchResult.get();
-            userInDB.setPassword(user.getPassword());
-            userRepository.save(userInDB);
-            return ResponseEntity.noContent().build();
-        } else {
+        if (!searchResult.isPresent()) {
             return ResponseEntity.notFound().build();
         }
+        User userInDB = searchResult.get();
+        userInDB.setPassword(user.getPassword());
+        userRepository.save(userInDB);
+        return ResponseEntity.noContent().build();
     }
 
     public ResponseEntity<?> deleteUserById(Long id) {
@@ -95,5 +94,15 @@ public class UserService {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    public ResponseEntity<?> findAllLecturesByUserId(Long id) {
+        Optional<User> searchResult = userRepository.findById(id);
+        if (!searchResult.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<Lecture> lectures = searchResult.get().getLectures();
+        return ResponseEntity.ok(lectures);
     }
 }

@@ -1,5 +1,8 @@
 package pl.medm.javadev.model;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import pl.medm.javadev.constraint.Password;
 import pl.medm.javadev.constraint.group.UserData;
 import pl.medm.javadev.constraint.group.UserPassword;
@@ -41,11 +44,22 @@ public class User implements Serializable {
             message = "pl.medm.javadev.model.User.password.Password",
             groups = UserPassword.class
     )
+//    @JsonProperty
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private String yearOfStudy;
     private String fieldOfStudy;
     private String indexNumber;
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(
+            fetch = FetchType.LAZY,
+            cascade = {CascadeType.ALL}
+    )
+    @JoinTable(
+            name = "user_lecture",
+            joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
+            inverseJoinColumns = {@JoinColumn(name = "lecture_id", referencedColumnName = "id")}
+    )
+    @JsonIgnore
     private List<Lecture> lectures = new ArrayList<>();
 
     public User() {
@@ -100,6 +114,7 @@ public class User implements Serializable {
         this.email = email;
     }
 
+    //    @JsonIgnore
     public String getPassword() {
         return password;
     }
