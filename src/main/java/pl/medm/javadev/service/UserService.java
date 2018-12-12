@@ -9,7 +9,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pl.medm.javadev.model.Lecture;
 import pl.medm.javadev.model.User;
 import pl.medm.javadev.repository.UserRepository;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -32,11 +31,9 @@ public class UserService {
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(result.getAllErrors());
         }
-
         if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-
         Long id = userRepository.save(user).getId();
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -56,7 +53,6 @@ public class UserService {
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(result.getAllErrors());
         }
-
         Optional<User> searchResult = userRepository.findById(id);
         if (!searchResult.isPresent()) {
             return ResponseEntity.notFound().build();
@@ -76,7 +72,6 @@ public class UserService {
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(result.getAllErrors());
         }
-
         Optional<User> searchResult = userRepository.findById(id);
         if (!searchResult.isPresent()) {
             return ResponseEntity.notFound().build();
@@ -88,12 +83,11 @@ public class UserService {
     }
 
     public ResponseEntity<?> deleteUserById(Long id) {
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
+        if (!userRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+        userRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     public ResponseEntity<?> findAllLecturesByUserId(Long id) {
@@ -101,7 +95,6 @@ public class UserService {
         if (!searchResult.isPresent()) {
             return ResponseEntity.notFound().build();
         }
-
         List<Lecture> lectures = searchResult.get().getLectures();
         return ResponseEntity.ok(lectures);
     }

@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import pl.medm.javadev.model.Lecture;
 import pl.medm.javadev.model.User;
 import pl.medm.javadev.service.LectureService;
-
 import java.util.List;
 
 @RestController
@@ -21,7 +20,6 @@ public class LectureRestController {
         this.lectureService = lectureService;
     }
 
-    //U wyświetl wszystkie wykłady
     @GetMapping
     public List<Lecture> getAllLectures() {
         return lectureService.getAllLectures();
@@ -52,7 +50,6 @@ public class LectureRestController {
         return lectureService.getAllUserById(id);
     }
 
-    //wpisanie się studenta na listę obecności na konkretnych zajęciach
     @PostMapping(path = "/{id}/users")
     public ResponseEntity<?> saveUserToLecture(@PathVariable Long id, @RequestBody User user) {
         return lectureService.saveUserToLecture(id, user);

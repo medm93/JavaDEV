@@ -9,7 +9,6 @@ import pl.medm.javadev.model.Lecture;
 import pl.medm.javadev.model.User;
 import pl.medm.javadev.repository.LectureRepository;
 import pl.medm.javadev.repository.UserRepository;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -33,15 +32,14 @@ public class LectureService {
     public ResponseEntity<?> createLecture(Lecture lecture) {
         if (lectureRepository.existsByTitle(lecture.getTitle())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        } else {
-            Long id = lectureRepository.save(lecture).getId();
-            URI location = ServletUriComponentsBuilder
-                    .fromCurrentRequest()
-                    .path("/{id}")
-                    .buildAndExpand(id)
-                    .toUri();
-            return ResponseEntity.created(location).body(lecture);
         }
+        Long id = lectureRepository.save(lecture).getId();
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri();
+        return ResponseEntity.created(location).body(lecture);
     }
 
     public ResponseEntity<?> findLectureById(Long id) {
@@ -51,27 +49,28 @@ public class LectureService {
     }
 
     public ResponseEntity<Lecture> updateLectureById(Long id, Lecture newLecture) {
-        if (lectureRepository.existsById(id)) {
-            Lecture lecture = lectureRepository.findById(id).get();
-            lecture.setTitle(newLecture.getTitle());
-            lecture.setDescription(newLecture.getDescription());
-            lecture.setLecturer(newLecture.getLecturer());
-            lectureRepository.save(lecture);
-            return ResponseEntity.ok(lecture);
-        } else {
+        if (!lectureRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+        Lecture lecture = lectureRepository.findById(id).get();
+        lecture.setTitle(newLecture.getTitle());
+        lecture.setDescription(newLecture.getDescription());
+        lecture.setLecturer(newLecture.getLecturer());
+        lectureRepository.save(lecture);
+        return ResponseEntity.ok(lecture);
     }
 
     public ResponseEntity<?> deleteLectureById(Long id) {
         if (lectureRepository.existsById(id)) {
-            if (lectureRepository.findById(id).get().getCompleted()) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-            lectureRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
+        if (lectureRepository.findById(id).get().getCompleted()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        lectureRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+
+
     }
 
     public ResponseEntity<List<User>> getAllUserById(Long id) {
@@ -87,11 +86,9 @@ public class LectureService {
     public ResponseEntity<User> saveUserToLecture(Long id, User user) {
         Optional<Lecture> lectureSearchResult = lectureRepository.findById(id);
         Optional<User> userSearchResult = userRepository.findById(user.getId());
-
         if (!lectureSearchResult.isPresent() || !userSearchResult.isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-
         Lecture lecture = lectureSearchResult.get();
         lecture.addUser(userSearchResult.get());
         lectureRepository.save(lecture);
@@ -102,6 +99,4 @@ public class LectureService {
                 .toUri();
         return ResponseEntity.created(location).body(userSearchResult.get());
     }
-
-
 }
