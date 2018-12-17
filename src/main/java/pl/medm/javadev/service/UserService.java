@@ -3,11 +3,14 @@ package pl.medm.javadev.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pl.medm.javadev.model.Lecture;
+import pl.medm.javadev.model.Role;
 import pl.medm.javadev.model.User;
+import pl.medm.javadev.repository.RoleRepository;
 import pl.medm.javadev.repository.UserRepository;
 import java.net.URI;
 import java.util.List;
@@ -16,11 +19,16 @@ import java.util.Optional;
 @Service
 public class UserService {
 
+    private static final String DEFAULT_ROLE = "ROLE_USER";
     private UserRepository userRepository;
+    private RoleRepository roleRepository;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> findAllUsers() {
@@ -34,7 +42,7 @@ public class UserService {
         if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        Long id = userRepository.save(user).getId();
+        Long id = addWithDefaultRole(user);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
@@ -97,5 +105,13 @@ public class UserService {
         }
         List<Lecture> lectures = searchResult.get().getLectures();
         return ResponseEntity.ok(lectures);
+    }
+
+    public Long addWithDefaultRole(User user) {
+        Role defaultRole = roleRepository.findByRole(DEFAULT_ROLE);
+        user.getRoles().add(defaultRole);
+        String passwordHash = passwordEncoder.encode(user.getPassword());
+        user.setPassword(passwordHash);
+        return userRepository.save(user).getId();
     }
 }
