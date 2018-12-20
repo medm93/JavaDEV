@@ -1,20 +1,22 @@
 package pl.medm.javadev.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import pl.medm.javadev.model.Lecture;
+import pl.medm.javadev.dto.LectureDTO;
+import pl.medm.javadev.dto.UserDTO;
 import pl.medm.javadev.model.Role;
 import pl.medm.javadev.model.User;
 import pl.medm.javadev.repository.RoleRepository;
 import pl.medm.javadev.repository.UserRepository;
-import java.net.URI;
+import pl.medm.javadev.utils.exception.UserExistsException;
+import pl.medm.javadev.utils.exception.UserNotFoundException;
+import pl.medm.javadev.utils.mapper.LectureMapper;
+import pl.medm.javadev.utils.mapper.UserMapper;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -23,47 +25,45 @@ public class UserService {
     private UserRepository userRepository;
     private RoleRepository roleRepository;
     private PasswordEncoder passwordEncoder;
+    private UserMapper userMapper;
+    private LectureMapper lectureMapper;
 
     @Autowired
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder,
+                       UserMapper userMapper, LectureMapper lectureMapper) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
+        this.lectureMapper = lectureMapper;
     }
 
-    public List<User> findAllUsers() {
-        return userRepository.findAll();
+    public List<UserDTO> findAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(userMapper::userToUserDTO)
+                .collect(Collectors.toList());
     }
 
-    public ResponseEntity<?> createUser(User user, BindingResult result) {
-        if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body(result.getAllErrors());
-        }
+    public UserDTO createUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            throw new UserExistsException("This email already exist!");
         }
-        Long id = addWithDefaultRole(user);
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(id)
-                .toUri();
-        return ResponseEntity.created(location).body(user);
+        return addWithDefaultRole(user);
     }
 
-    public ResponseEntity<?> findUserById(Long id) {
-        return userRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    public ResponseEntity<?> updateUserData(Long id, User user, BindingResult result) {
-        if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body(result.getAllErrors());
-        }
+    public UserDTO findUserById(Long id) {
         Optional<User> searchResult = userRepository.findById(id);
         if (!searchResult.isPresent()) {
-            return ResponseEntity.notFound().build();
+            throw new UserNotFoundException("Not found user by id=" + id);
+        }
+        return searchResult.map(userMapper::userToUserDTO).get();
+    }
+
+    public void updateUserDataById(Long id, User user) {
+        Optional<User> searchResult = userRepository.findById(id);
+        if (!searchResult.isPresent()) {
+            throw new UserNotFoundException("Not found user by id=" + id);
         }
         User userInDB = searchResult.get();
         userInDB.setFirstName(user.getFirstName());
@@ -73,45 +73,44 @@ public class UserService {
         userInDB.setFieldOfStudy(user.getFieldOfStudy());
         userInDB.setIndexNumber(user.getIndexNumber());
         userRepository.save(userInDB);
-        return ResponseEntity.noContent().build();
     }
 
-    public ResponseEntity<?> updateUserPassword(Long id, User user, BindingResult result) {
-        if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body(result.getAllErrors());
-        }
+    public void updateUserPassword(Long id, User user) {
         Optional<User> searchResult = userRepository.findById(id);
         if (!searchResult.isPresent()) {
-            return ResponseEntity.notFound().build();
+            throw new UserNotFoundException("Not found user by id=" + id);
         }
         User userInDB = searchResult.get();
         userInDB.setPassword(user.getPassword());
         userRepository.save(userInDB);
-        return ResponseEntity.noContent().build();
     }
 
-    public ResponseEntity<?> deleteUserById(Long id) {
+    public void deleteUserById(Long id) {
         if (!userRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+            throw new UserNotFoundException("Not found user by id=" + id);
         }
         userRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 
-    public ResponseEntity<?> findAllLecturesByUserId(Long id) {
+    public List<LectureDTO> findAllLecturesByUserId(Long id) {
         Optional<User> searchResult = userRepository.findById(id);
         if (!searchResult.isPresent()) {
-            return ResponseEntity.notFound().build();
+            throw new UserNotFoundException("Not found user by id=" + id);
         }
-        List<Lecture> lectures = searchResult.get().getLectures();
-        return ResponseEntity.ok(lectures);
+        return searchResult
+                .get()
+                .getLectures()
+                .stream()
+                .map(lectureMapper::lectureToLectureDTO)
+                .collect(Collectors.toList());
     }
 
-    public Long addWithDefaultRole(User user) {
+    private UserDTO addWithDefaultRole(User user) {
         Role defaultRole = roleRepository.findByRole(DEFAULT_ROLE);
         user.getRoles().add(defaultRole);
         String passwordHash = passwordEncoder.encode(user.getPassword());
         user.setPassword(passwordHash);
-        return userRepository.save(user).getId();
+        userRepository.save(user);
+        return userMapper.userToUserDTO(user);
     }
 }
