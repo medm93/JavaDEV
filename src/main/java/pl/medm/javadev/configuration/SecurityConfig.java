@@ -61,7 +61,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
-                //.successHandler(mySavedRequestAwareAuthenticationSuccessHandler)
+                .successHandler(mySavedRequestAwareAuthenticationSuccessHandler)
                 .and()
                 .headers().frameOptions().disable()
                 .and()

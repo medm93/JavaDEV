@@ -18,7 +18,8 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-public @Data @NoArgsConstructor class User implements Serializable {
+@Data
+public class User implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,11 +53,4 @@ public @Data @NoArgsConstructor class User implements Serializable {
             inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "id")}
     )
     private Set<Role> roles = new HashSet<>();
-
-    public User(String firstName, String lastName, String email, String password) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
-    }
 }

@@ -2,15 +2,14 @@ package pl.medm.javadev.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public @Data @NoArgsConstructor class Lecture implements Serializable {
+@Data
+public class Lecture implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
