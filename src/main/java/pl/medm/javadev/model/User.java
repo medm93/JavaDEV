@@ -1,8 +1,5 @@
 package pl.medm.javadev.model;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import pl.medm.javadev.constraint.Password;
 import pl.medm.javadev.constraint.group.UserData;
@@ -32,7 +29,6 @@ public class User implements Serializable {
     @NotEmpty(message = "pl.medm.javadev.model.User.email.NotEmpty", groups = {UserData.class})
     private String email;
     @Password(message = "pl.medm.javadev.model.User.password.Password", groups = UserPassword.class)
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private String yearOfStudy;
     private String fieldOfStudy;
@@ -43,7 +39,6 @@ public class User implements Serializable {
             joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "lecture_id", referencedColumnName = "id")}
     )
-    @JsonIgnore
     private List<Lecture> lectures = new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)

@@ -8,5 +8,5 @@ import pl.medm.javadev.model.Lecture;
 public interface LectureMapper {
 
     LectureDTO lectureToLectureDTO(Lecture lecture);
-    Lecture lectureDTOtoLecture(LectureDTO lectureDTO);
+    Lecture lectureDTOToLecture(LectureDTO lectureDTO);
 }

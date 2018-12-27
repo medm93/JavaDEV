@@ -1,7 +1,7 @@
 package pl.medm.javadev.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,7 +23,6 @@ public class Lecture implements Serializable {
             cascade = {CascadeType.ALL},
             mappedBy = "lectures"
     )
-    @JsonIgnore
     private List<User> users = new ArrayList<>();
 
     public void addUser(User user) {
