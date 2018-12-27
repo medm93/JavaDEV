@@ -2,6 +2,7 @@ package pl.medm.javadev.controller.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pl.medm.javadev.dto.LectureDTO;
@@ -26,11 +27,13 @@ public class LectureRestController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Stream<LectureDTO>> getAllLectures() {
         return ResponseEntity.ok(lectureService.findAllLectures());
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> createLecture(@RequestBody Lecture lecture) {
         LectureDTO lectureDTO = lectureService.createLecture(lecture);
         URI location = ServletUriComponentsBuilder
@@ -42,28 +45,33 @@ public class LectureRestController {
     }
 
     @GetMapping(path = "/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<LectureDTO> findLectureById(@PathVariable Long id) {
         return ResponseEntity.ok(lectureService.findLectureById(id));
     }
 
     @PutMapping(path = "/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Object> updateLecture(@PathVariable Long id, @RequestBody Lecture lecture) {
         lectureService.updateLectureById(id, lecture);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping(path = "/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Object> deleteLecture(@PathVariable Long id) {
         lectureService.deleteLectureById(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping(path = "/{id}/users")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<UserDTO>> getAttendance(@PathVariable Long id) {
         return ResponseEntity.ok(lectureService.getAllUserById(id));
     }
 
     @PostMapping(path = "/{id}/users")
+    @PreAuthorize("hasAnyRole('USER')")
     public ResponseEntity<UserDTO> saveUserToLecture(@PathVariable Long id, @RequestBody User user) {
         UserDTO userDTO = lectureService.saveUserToLecture(id, user);
         URI location = ServletUriComponentsBuilder
