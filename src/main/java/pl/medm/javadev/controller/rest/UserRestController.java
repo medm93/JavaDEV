@@ -1,7 +1,6 @@
 package pl.medm.javadev.controller.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -11,9 +10,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pl.medm.javadev.constraint.group.UserData;
 import pl.medm.javadev.constraint.group.UserPassword;
 import pl.medm.javadev.constraint.group.UserRegistration;
-import pl.medm.javadev.dto.LectureDTO;
-import pl.medm.javadev.dto.UserDTO;
-import pl.medm.javadev.model.User;
+import pl.medm.javadev.model.dto.LectureDTO;
+import pl.medm.javadev.model.dto.UserDTO;
+import pl.medm.javadev.model.entity.User;
 import pl.medm.javadev.service.UserService;
 
 import java.net.URI;

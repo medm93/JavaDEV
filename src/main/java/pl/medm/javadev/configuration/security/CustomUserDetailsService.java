@@ -15,8 +15,8 @@ import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import pl.medm.javadev.model.Role;
-import pl.medm.javadev.model.User;
+import pl.medm.javadev.model.entity.Role;
+import pl.medm.javadev.model.entity.User;
 import pl.medm.javadev.repository.UserRepository;
 
 import javax.servlet.ServletException;

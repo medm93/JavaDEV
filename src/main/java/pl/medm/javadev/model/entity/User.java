@@ -1,4 +1,4 @@
-package pl.medm.javadev.model;
+package pl.medm.javadev.model.entity;
 
 import lombok.*;
 import pl.medm.javadev.constraint.Password;
@@ -16,6 +16,7 @@ import java.util.Set;
 
 @Entity
 @Data
+@NoArgsConstructor
 public class User implements Serializable {
 
     @Id
@@ -48,4 +49,12 @@ public class User implements Serializable {
             inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "id")}
     )
     private Set<Role> roles = new HashSet<>();
+
+    public User(Long id, String firstName, String lastName, String email, String password) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+    }
 }

@@ -5,10 +5,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import pl.medm.javadev.dto.LectureDTO;
-import pl.medm.javadev.dto.UserDTO;
-import pl.medm.javadev.model.Lecture;
-import pl.medm.javadev.model.User;
+import pl.medm.javadev.model.dto.LectureDTO;
+import pl.medm.javadev.model.dto.UserDTO;
+import pl.medm.javadev.model.entity.Lecture;
+import pl.medm.javadev.model.entity.User;
 import pl.medm.javadev.service.LectureService;
 
 import java.net.URI;

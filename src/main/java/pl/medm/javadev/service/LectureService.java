@@ -1,14 +1,11 @@
 package pl.medm.javadev.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import pl.medm.javadev.dto.LectureDTO;
-import pl.medm.javadev.dto.UserDTO;
-import pl.medm.javadev.model.Lecture;
-import pl.medm.javadev.model.User;
+import pl.medm.javadev.model.dto.LectureDTO;
+import pl.medm.javadev.model.dto.UserDTO;
+import pl.medm.javadev.model.entity.Lecture;
+import pl.medm.javadev.model.entity.User;
 import pl.medm.javadev.repository.LectureRepository;
 import pl.medm.javadev.repository.UserRepository;
 import pl.medm.javadev.utils.exception.LectureExistsException;
@@ -18,7 +15,6 @@ import pl.medm.javadev.utils.exception.UserExistsException;
 import pl.medm.javadev.utils.mapper.LectureMapper;
 import pl.medm.javadev.utils.mapper.UserMapper;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;

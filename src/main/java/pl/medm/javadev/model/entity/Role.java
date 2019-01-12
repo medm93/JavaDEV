@@ -1,5 +1,6 @@
-package pl.medm.javadev.model;
+package pl.medm.javadev.model.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import javax.persistence.Id;
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Role {
 
     @Id

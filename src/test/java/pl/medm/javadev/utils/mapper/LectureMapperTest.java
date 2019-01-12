@@ -5,8 +5,8 @@ import org.junit.runner.RunWith;
 import org.mapstruct.factory.Mappers;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import pl.medm.javadev.dto.LectureDTO;
-import pl.medm.javadev.model.Lecture;
+import pl.medm.javadev.model.dto.LectureDTO;
+import pl.medm.javadev.model.entity.Lecture;
 
 import static org.junit.Assert.assertEquals;
 

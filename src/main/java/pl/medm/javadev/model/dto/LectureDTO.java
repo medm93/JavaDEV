@@ -1,4 +1,4 @@
-package pl.medm.javadev.dto;
+package pl.medm.javadev.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;

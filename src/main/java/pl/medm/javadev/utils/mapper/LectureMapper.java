@@ -1,8 +1,8 @@
 package pl.medm.javadev.utils.mapper;
 
 import org.mapstruct.Mapper;
-import pl.medm.javadev.dto.LectureDTO;
-import pl.medm.javadev.model.Lecture;
+import pl.medm.javadev.model.dto.LectureDTO;
+import pl.medm.javadev.model.entity.Lecture;
 
 @Mapper(componentModel = "spring")
 public interface LectureMapper {
