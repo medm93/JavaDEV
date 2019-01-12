@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -37,9 +36,10 @@ class UserServiceTest {
     private RoleRepository roleRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
+
     private UserMapper userMapper = Mappers.getMapper(UserMapper.class);
+
     private LectureMapper lectureMapper = Mappers.getMapper(LectureMapper.class);
-    @Mock
 
     private UserService userService;
 
@@ -50,9 +50,10 @@ class UserServiceTest {
 
     @Test
     void testFindAllUser() {
-        User user1 = new User(1L, "Tony", "Stark", "ironman@gmail.com", "zaq1@WSX");
-        User user2 = new User(2L, "James", "Bond", "007@gmail.com", "zaq1@WSX");
-        List<User> users = Arrays.asList(user1, user2);
+        List<User> users = Arrays.asList(
+                new User(1L, "Tony", "Stark", "ironman@gmail.com", "zaq1@WSX"),
+                new User(2L, "James", "Bond", "007@gmail.com", "zaq1@WSX")
+        );
         List<UserDTO> expected = users.stream().map(userMapper::userToUserDTO).collect(Collectors.toList());
         when(userRepository.findAll()).thenReturn(users);
 
@@ -69,7 +70,7 @@ class UserServiceTest {
         Throwable exception = assertThrows(UserExistsException.class, () ->
                 userService.createUser(user)
         );
-        assertEquals("This email already exist!", exception.getMessage());
+        Assertions.assertEquals("This email already exist!", exception.getMessage());
         verify(userRepository, times(1)).existsByEmail("007@gmail.com");
     }
 
@@ -103,7 +104,7 @@ class UserServiceTest {
         Throwable exception = assertThrows(UserNotFoundException.class, () ->
                 userService.findUserById(1L)
         );
-        assertEquals("Not found user by id=1", exception.getMessage());
+        Assertions.assertEquals("Not found user by id=1", exception.getMessage());
         verify(userRepository, times(1)).findById(1L);
     }
 
@@ -130,7 +131,7 @@ class UserServiceTest {
         Throwable exception = assertThrows(UserNotFoundException.class, () ->
                 userService.updateUserPassword(1L, updated)
         );
-        assertEquals("Not found user by id=1", exception.getMessage());
+        Assertions.assertEquals("Not found user by id=1", exception.getMessage());
         verify(userRepository, times(1)).findById(1L);
     }
 
@@ -156,7 +157,7 @@ class UserServiceTest {
         Throwable exception = assertThrows(UserNotFoundException.class, () ->
                 userService.updateUserPassword(1L, updated)
         );
-        assertEquals("Not found user by id=1", exception.getMessage());
+        Assertions.assertEquals("Not found user by id=1", exception.getMessage());
         verify(userRepository, times(1)).findById(1L);
     }
 
@@ -175,7 +176,7 @@ class UserServiceTest {
         Throwable exception = assertThrows(UserNotFoundException.class, () ->
                 userService.deleteUserById(1L)
         );
-        assertEquals("Not found user by id=1", exception.getMessage());
+        Assertions.assertEquals("Not found user by id=1", exception.getMessage());
         verify(userRepository, times(1)).existsById(1L);
     }
 
@@ -202,7 +203,7 @@ class UserServiceTest {
         Throwable exception = assertThrows(UserNotFoundException.class, () ->
                 userService.findAllLecturesByUserId(1L)
         );
-        assertEquals("Not found user by id=1", exception.getMessage());
+        Assertions.assertEquals("Not found user by id=1", exception.getMessage());
         verify(userRepository, times(1)).findById(1L);
     }
 }

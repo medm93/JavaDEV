@@ -18,7 +18,6 @@ import pl.medm.javadev.utils.mapper.UserMapper;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class LectureService {
@@ -37,10 +36,11 @@ public class LectureService {
         this.userMapper = userMapper;
     }
 
-    public Stream<LectureDTO> findAllLectures() {
+    public List<LectureDTO> findAllLectures() {
         return lectureRepository.findAll()
                 .stream()
-                .map(lectureMapper::lectureToLectureDTO);
+                .map(lectureMapper::lectureToLectureDTO)
+                .collect(Collectors.toList());
     }
 
     public LectureDTO createLecture(Lecture lecture) {
@@ -49,13 +49,6 @@ public class LectureService {
         }
         lectureRepository.save(lecture);
         return lectureMapper.lectureToLectureDTO(lecture);
-//        Long id = lectureRepository.save(lecture).getId();
-//        URI location = ServletUriComponentsBuilder
-//                .fromCurrentRequest()
-//                .path("/{id}")
-//                .buildAndExpand(id)
-//                .toUri();
-//        return ResponseEntity.created(location).body(lecture);
     }
 
     public LectureDTO findLectureById(Long id) {
@@ -89,7 +82,7 @@ public class LectureService {
         lectureRepository.deleteById(id);
     }
 
-    public List<UserDTO> getAllUserById(Long id) {
+    public List<UserDTO> findAllUserByLectureId(Long id) {
         Optional<Lecture> lecture = lectureRepository.findById(id);
         if (!lecture.isPresent()) {
             throw new LectureNotFoundException("Not found lecture by id=" + id);
