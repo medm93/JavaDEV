@@ -4,18 +4,11 @@ package pl.medm.javadev.repository;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
-import pl.medm.javadev.model.Role;
-import pl.medm.javadev.repository.RoleRepository;
+import pl.medm.javadev.model.entity.Role;
 
 import java.util.List;
 
@@ -30,8 +23,8 @@ import static org.junit.Assert.assertThat;
 //@ContextConfiguration(classes = RoleRepository.class)
 @SpringBootTest
 public class RoleRepositoryTest {
-    public static final String ROLE_ADMIN = "ROLE_ADMIN";
-    public static final String ROLE_USER = "ROLE_USER";
+    private static final String ROLE_ADMIN = "ROLE_ADMIN";
+    private static final String ROLE_USER = "ROLE_USER";
 
 //    @Autowired
 //    private TestEntityManager entityManager;
@@ -40,9 +33,10 @@ public class RoleRepositoryTest {
     RoleRepository roleRepository;
 
     @Test
-    public void givenFindNoRole_whenRepository_thenEmpty() {
+    public void roleIsNotNull() {
         List<Role> searchResult = roleRepository.findAll();
         Assertions.assertThat(searchResult).hasSize(2);
+        Assertions.assertThat(searchResult).isNotNull();
     }
 
     @Test
@@ -55,5 +49,26 @@ public class RoleRepositoryTest {
     public void findRoleUser() {
         Role searchResult = roleRepository.findByRole(ROLE_USER);
         Assertions.assertThat(searchResult.getRole()).isEqualTo(ROLE_USER);
+    }
+
+    @Test
+    @Rollback
+    public void saveAndFindRole() {
+        Role role = new Role("ROLE_MODERATOR");
+        roleRepository.save(role);
+        Role searchResult = roleRepository.findByRole(role.getRole());
+
+        Assertions.assertThat(searchResult.getRole()).isEqualTo(role.getRole());
+    }
+
+    @Test
+    @Rollback
+    public void saveAndDeleteRole() {
+        Role role = new Role("ROLE_MODERATOR");
+        roleRepository.save(role);
+        roleRepository.delete(role);
+        Role searchResult = roleRepository.findByRole(role.getRole());
+
+        Assertions.assertThat(searchResult).isNull();
     }
 }

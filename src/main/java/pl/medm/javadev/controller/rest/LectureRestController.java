@@ -13,7 +13,6 @@ import pl.medm.javadev.service.LectureService;
 
 import java.net.URI;
 import java.util.List;
-import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/lectures")
@@ -28,7 +27,7 @@ public class LectureRestController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Stream<LectureDTO>> getAllLectures() {
+    public ResponseEntity<List<LectureDTO>> getAllLectures() {
         return ResponseEntity.ok(lectureService.findAllLectures());
     }
 
@@ -67,7 +66,7 @@ public class LectureRestController {
     @GetMapping(path = "/{id}/users")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<UserDTO>> getAttendance(@PathVariable Long id) {
-        return ResponseEntity.ok(lectureService.getAllUserById(id));
+        return ResponseEntity.ok(lectureService.findAllUserByLectureId(id));
     }
 
     @PostMapping(path = "/{id}/users")

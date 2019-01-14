@@ -7,7 +7,7 @@ import javax.validation.ConstraintValidatorContext;
 
 public class PasswordValidator implements ConstraintValidator<Password, String> {
 
-    private static final String PATTERN = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{min,max}$";
+    private static final String PATTERN = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[!\"#$%&'()*+,-./:;<=>?@\\^_`{|}~])(?=\\S+$).{min,max}$";
     private static final String MIN = "min";
     private static final String MAX = "max";
     private String min;
