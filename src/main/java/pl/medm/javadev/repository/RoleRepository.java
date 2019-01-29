@@ -8,4 +8,6 @@ import pl.medm.javadev.model.entity.Role;
 public interface RoleRepository extends JpaRepository<Role, Long> {
 
     Role findByRole(String role);
+
+    Boolean existsByRole(String role);
 }
