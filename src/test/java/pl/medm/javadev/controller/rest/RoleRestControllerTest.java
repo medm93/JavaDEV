@@ -45,6 +45,7 @@ class RoleRestControllerTest {
 
     @AfterEach
     void cleanup() {
+        System.out.println("cleanup");
         JdbcTestUtils.deleteFromTables(jdbcTemplate, "role");
     }
 
@@ -152,7 +153,7 @@ class RoleRestControllerTest {
     void testWhenFindRoleByIdAsUserThenReturnStatusIsForbidden() throws Exception {
         mvc.perform(get("/roles/{id}", 1L))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -190,6 +191,17 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     @Sql("/data-role-test.sql")
+    void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsForbidden() throws Exception {
+        Role role = new Role("ROLE_MODERATOR");
+        ObjectMapper mapper = new ObjectMapper();
+        mvc.perform(put("/roles/{id}", 1L).content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @Sql("/data-role-test.sql")
     void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsBadRequest() throws Exception {
         Role role = new Role();
         ObjectMapper mapper = new ObjectMapper();
@@ -217,7 +229,7 @@ class RoleRestControllerTest {
         ObjectMapper mapper = new ObjectMapper();
         mvc.perform(put("/roles/{id}", 2L).content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     //DELETE ROLE BY ID
