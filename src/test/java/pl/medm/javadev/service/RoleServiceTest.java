@@ -43,11 +43,14 @@ class RoleServiceTest {
     //FIND ALL ROLES
     @Test
     void testWhenFindAllRoles() {
-        List<Role> roles = Arrays.asList(new Role("ROLE_ADMIN"), new Role("ROLE_USER"));
-        List<RoleDTO> expected = roles.stream().map(roleMapper::roleToRoleDTO).collect(Collectors.toList());
+        List<Role> roles = Arrays.asList(new Role(1L, "ROLE_ADMIN"), new Role(2L, "ROLE_USER"));
         when(roleRepository.findAll()).thenReturn(roles);
 
+        List<RoleDTO> expected = roles.stream()
+                .map(roleMapper::roleToRoleDTO)
+                .collect(Collectors.toList());
         List<RoleDTO> actual = roleService.findAllRoles();
+
         Assertions.assertIterableEquals(expected, actual);
         verify(roleRepository, times(1)).findAll();
     }
@@ -55,25 +58,26 @@ class RoleServiceTest {
     //CREATE ROLE
     @Test
     void testWhenCreateRoleThenRoleExists() {
-        String roleName = "ROLE_MODERATOR";
-        Role role = new Role(roleName);
-        when(roleRepository.existsByRole(roleName)).thenReturn(true);
+        Role role = new Role(1L,"ROLE_MODERATOR");
+        when(roleRepository.existsByRole("ROLE_MODERATOR")).thenReturn(true);
 
         Throwable exception = assertThrows(RoleExistsException.class, () ->
                 roleService.createRole(role)
         );
+
         Assertions.assertEquals("Role exists!", exception.getMessage());
-        verify(roleRepository, times(1)).existsByRole(roleName);
+        verify(roleRepository, times(1)).existsByRole("ROLE_MODERATOR");
         verify(roleRepository, times(0)).save(role);
     }
 
     @Test
     void testWhenCreateRoleThenRoleNotExists() {
-        Role role = new Role("ROLE_MODERATOR");
+        Role role = new Role(1L,"ROLE_MODERATOR");
         when(roleRepository.existsByRole("ROLE_MODERATOR")).thenReturn(false);
 
         RoleDTO expected = roleMapper.roleToRoleDTO(role);
         RoleDTO actual = roleService.createRole(role);
+
         Assertions.assertEquals(expected, actual);
         verify(roleRepository, times(1)).existsByRole("ROLE_MODERATOR");
         verify(roleRepository, times(1)).save(role);
@@ -82,11 +86,12 @@ class RoleServiceTest {
     //FIND ROLE BY ID
     @Test
     void testWhenFindRoleByIdThenRoleFound() {
-        Role role = new Role("ROLE_MODERATOR");
+        Role role = new Role(1L,"ROLE_MODERATOR");
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
 
         RoleDTO expected = roleMapper.roleToRoleDTO(role);
         RoleDTO actual = roleService.findRoleById(1L);
+
         Assertions.assertEquals(expected, actual);
         verify(roleRepository, times(1)).findById(1L);
     }
@@ -98,6 +103,7 @@ class RoleServiceTest {
         Throwable exception = assertThrows(RoleNotFoundException.class, () ->
                 roleService.findRoleById(1L)
         );
+
         Assertions.assertEquals("Role not found!", exception.getMessage());
         verify(roleRepository, times(1)).findById(1L);
     }
@@ -105,18 +111,22 @@ class RoleServiceTest {
     //UPDATE ROLE BY ID
     @Test
     void testWhenUpdateRoleByIdThenRoleFound() {
-        Role role = new Role("ROLE_USER");
+        Role role = new Role(1L, "ROLE_USER");
         Role updated = new Role("ROLE_MODERATOR");
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
 
         roleService.updateRoleById(1L, updated);
-        verify(roleRepository, times(1)).findById(1L);
+        RoleDTO expected = new RoleDTO(1L, "ROLE_MODERATOR");
+        RoleDTO actual = roleService.findRoleById(1L);
+
+        Assertions.assertEquals(expected, actual);
+        verify(roleRepository, times(2)).findById(1L);
         verify(roleRepository, times(1)).save(role);
     }
 
     @Test
     void testWhenUpdateRoleByIdThenRoleNotFound() {
-        Role role = new Role("ROLE_USER");
+        Role role = new Role(1L, "ROLE_USER");
         Role updated = new Role("ROLE_MODERATOR");
         when(roleRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -173,6 +183,7 @@ class RoleServiceTest {
         Throwable exception = assertThrows(RoleForbiddenException.class, () ->
                 roleService.deleteRoleById(1L)
         );
+
         Assertions.assertEquals("Delete role admin is forbidden!", exception.getMessage());
         verify(roleRepository, times(1)).findById(1L);
         verify(roleRepository, times(0)).save(role);

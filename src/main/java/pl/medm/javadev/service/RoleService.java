@@ -40,7 +40,7 @@ public class RoleService {
         return roleMapper.roleToRoleDTO(role);
     }
 
-    public RoleDTO findRoleById(Long id) {
+    public RoleDTO findRoleById(long id) {
         Optional<Role> searchResult = roleRepository.findById(id);
         if (!searchResult.isPresent()) {
             throw new RoleNotFoundException("Role not found!");
