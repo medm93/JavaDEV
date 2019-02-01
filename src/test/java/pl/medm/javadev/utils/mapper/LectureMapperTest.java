@@ -17,28 +17,32 @@ public class LectureMapperTest {
     private LectureMapper lectureMapper = Mappers.getMapper(LectureMapper.class);
 
     @Test
-    public void givenLectureToLectureDTO_whenMaps_thenCorrect() {
+    public void testWhenLectureToLectureDTOThenCorrect() {
         Lecture lecture = new Lecture();
         lecture.setTitle("Lecture 1 - Spring basics");
         lecture.setDescription("Introduction to the Spring framework");
         lecture.setLecturer("Jan Kowalski");
+        lecture.setCompleted(false);
         LectureDTO lectureDTO = lectureMapper.lectureToLectureDTO(lecture);
 
         assertEquals(lecture.getTitle(), lectureDTO.getTitle());
         assertEquals(lecture.getDescription(), lectureDTO.getDescription());
         assertEquals(lecture.getLecturer(), lectureDTO.getLecturer());
+        assertEquals(lecture.isCompleted(), lectureDTO.isCompleted());
     }
 
     @Test
-    public void givenLectureDTOToLecture_whenMaps_thenCorrect() {
+    public void testWhenLectureDTOToLectureThenCorrect() {
         LectureDTO lectureDTO = new LectureDTO();
         lectureDTO.setTitle("Lecture 1 - Spring basics");
         lectureDTO.setDescription("Introduction to the Spring framework");
         lectureDTO.setLecturer("Jan Kowalski");
+        lectureDTO.setCompleted(false);
         Lecture lecture = lectureMapper.lectureDTOToLecture(lectureDTO);
 
         assertEquals(lectureDTO.getTitle(), lecture.getTitle());
         assertEquals(lectureDTO.getDescription(), lecture.getDescription());
         assertEquals(lectureDTO.getLecturer(), lecture.getLecturer());
+        assertEquals(lectureDTO.isCompleted(), lecture.isCompleted());
     }
 }

@@ -15,4 +15,12 @@ public class LectureDTO {
     private String title;
     private String description;
     private String lecturer;
+    private boolean completed;
+
+    public LectureDTO(String title, String description, String lecturer, boolean completed) {
+        this.title = title;
+        this.description = description;
+        this.lecturer = lecturer;
+        this.completed = completed;
+    }
 }

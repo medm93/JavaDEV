@@ -3,6 +3,7 @@ package pl.medm.javadev.controller.rest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pl.medm.javadev.model.dto.LectureDTO;
@@ -11,6 +12,7 @@ import pl.medm.javadev.model.entity.Lecture;
 import pl.medm.javadev.model.entity.User;
 import pl.medm.javadev.service.LectureService;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 
@@ -33,7 +35,10 @@ public class LectureRestController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<?> createLecture(@RequestBody Lecture lecture) {
+    public ResponseEntity<?> createLecture(@Valid @RequestBody Lecture lecture, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest().body(result.getAllErrors());
+        }
         LectureDTO lectureDTO = lectureService.createLecture(lecture);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -51,7 +56,11 @@ public class LectureRestController {
 
     @PutMapping(path = "/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<Object> updateLecture(@PathVariable Long id, @RequestBody Lecture lecture) {
+    public ResponseEntity<Object> updateLecture(@PathVariable Long id, @Valid @RequestBody Lecture lecture,
+                                                BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest().body(result.getAllErrors());
+        }
         lectureService.updateLectureById(id, lecture);
         return ResponseEntity.noContent().build();
     }
@@ -66,7 +75,7 @@ public class LectureRestController {
     @GetMapping(path = "/{id}/users")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<UserDTO>> getAttendance(@PathVariable Long id) {
-        return ResponseEntity.ok(lectureService.findAllUserByLectureId(id));
+        return ResponseEntity.ok(lectureService.findAllUsersForLectureById(id));
     }
 
     @PostMapping(path = "/{id}/users")
