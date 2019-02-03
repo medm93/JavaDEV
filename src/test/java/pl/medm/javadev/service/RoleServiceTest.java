@@ -10,9 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import pl.medm.javadev.model.dto.RoleDTO;
 import pl.medm.javadev.model.entity.Role;
 import pl.medm.javadev.repository.RoleRepository;
-import pl.medm.javadev.utils.exception.RoleExistsException;
-import pl.medm.javadev.utils.exception.RoleForbiddenException;
-import pl.medm.javadev.utils.exception.RoleNotFoundException;
+import pl.medm.javadev.utils.exception.*;
 import pl.medm.javadev.utils.mapper.RoleMapper;
 
 import java.util.Arrays;
@@ -57,22 +55,22 @@ class RoleServiceTest {
 
     //CREATE ROLE
     @Test
-    void testWhenCreateRoleThenRoleExists() {
-        Role role = new Role(1L,"ROLE_MODERATOR");
+    void testWhenCreateRoleThenRoleConflict() {
+        Role role = new Role(1L, "ROLE_MODERATOR");
         when(roleRepository.existsByRole("ROLE_MODERATOR")).thenReturn(true);
 
-        Throwable exception = assertThrows(RoleExistsException.class, () ->
+        Throwable exception = assertThrows(ConflictException.class, () ->
                 roleService.createRole(role)
         );
 
-        Assertions.assertEquals("Role exists!", exception.getMessage());
+        Assertions.assertEquals("Role conflict!", exception.getMessage());
         verify(roleRepository, times(1)).existsByRole("ROLE_MODERATOR");
         verify(roleRepository, times(0)).save(role);
     }
 
     @Test
-    void testWhenCreateRoleThenRoleNotExists() {
-        Role role = new Role(1L,"ROLE_MODERATOR");
+    void testWhenCreateRoleThenRoleNotConflict() {
+        Role role = new Role(1L, "ROLE_MODERATOR");
         when(roleRepository.existsByRole("ROLE_MODERATOR")).thenReturn(false);
 
         RoleDTO expected = roleMapper.roleToRoleDTO(role);
@@ -86,7 +84,7 @@ class RoleServiceTest {
     //FIND ROLE BY ID
     @Test
     void testWhenFindRoleByIdThenRoleFound() {
-        Role role = new Role(1L,"ROLE_MODERATOR");
+        Role role = new Role(1L, "ROLE_MODERATOR");
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
 
         RoleDTO expected = roleMapper.roleToRoleDTO(role);
@@ -100,7 +98,7 @@ class RoleServiceTest {
     void testWhenFindRoleByIdThenRoleNotFound() {
         when(roleRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Throwable exception = assertThrows(RoleNotFoundException.class, () ->
+        Throwable exception = assertThrows(NotFoundException.class, () ->
                 roleService.findRoleById(1L)
         );
 
@@ -130,7 +128,7 @@ class RoleServiceTest {
         Role updated = new Role("ROLE_MODERATOR");
         when(roleRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Throwable exception = assertThrows(RoleNotFoundException.class, () ->
+        Throwable exception = assertThrows(NotFoundException.class, () ->
                 roleService.updateRoleById(1L, updated)
         );
         Assertions.assertEquals("Role not found!", exception.getMessage());
@@ -139,15 +137,15 @@ class RoleServiceTest {
     }
 
     @Test
-    void testWhenUpdateRoleByIdThenChangeIsForbidden() {
+    void testWhenUpdateRoleByIdThenUpdateIsForbidden() {
         Role role = new Role("ROLE_ADMIN");
         Role updated = new Role("ROLE_MODERATOR");
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
 
-        Throwable exception = assertThrows(RoleForbiddenException.class, () ->
+        Throwable exception = assertThrows(ForbiddenException.class, () ->
                 roleService.updateRoleById(1L, updated)
         );
-        Assertions.assertEquals("Change role admin is forbidden!", exception.getMessage());
+        Assertions.assertEquals("Forbidden!", exception.getMessage());
         verify(roleRepository, times(1)).findById(1L);
         verify(roleRepository, times(0)).save(role);
     }
@@ -167,7 +165,7 @@ class RoleServiceTest {
     void testWhenDeleteRoleByIdThenRoleNotFound() {
         when(roleRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Throwable exception = assertThrows(RoleNotFoundException.class, () ->
+        Throwable exception = assertThrows(NotFoundException.class, () ->
                 roleService.deleteRoleById(1L)
         );
         Assertions.assertEquals("Role not found!", exception.getMessage());
@@ -180,11 +178,11 @@ class RoleServiceTest {
         Role role = new Role("ROLE_ADMIN");
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
 
-        Throwable exception = assertThrows(RoleForbiddenException.class, () ->
+        Throwable exception = assertThrows(ForbiddenException.class, () ->
                 roleService.deleteRoleById(1L)
         );
 
-        Assertions.assertEquals("Delete role admin is forbidden!", exception.getMessage());
+        Assertions.assertEquals("Forbidden!", exception.getMessage());
         verify(roleRepository, times(1)).findById(1L);
         verify(roleRepository, times(0)).save(role);
     }

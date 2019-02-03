@@ -5,9 +5,7 @@ import org.springframework.stereotype.Service;
 import pl.medm.javadev.model.dto.RoleDTO;
 import pl.medm.javadev.model.entity.Role;
 import pl.medm.javadev.repository.RoleRepository;
-import pl.medm.javadev.utils.exception.RoleExistsException;
-import pl.medm.javadev.utils.exception.RoleForbiddenException;
-import pl.medm.javadev.utils.exception.RoleNotFoundException;
+import pl.medm.javadev.utils.exception.*;
 import pl.medm.javadev.utils.mapper.RoleMapper;
 
 import java.util.List;
@@ -34,7 +32,7 @@ public class RoleService {
 
     public RoleDTO createRole(Role role) {
         if (roleRepository.existsByRole(role.getRole())) {
-            throw new RoleExistsException("Role exists!");
+            throw new ConflictException("Role conflict!");
         }
         roleRepository.save(role);
         return roleMapper.roleToRoleDTO(role);
@@ -43,7 +41,7 @@ public class RoleService {
     public RoleDTO findRoleById(long id) {
         Optional<Role> searchResult = roleRepository.findById(id);
         if (!searchResult.isPresent()) {
-            throw new RoleNotFoundException("Role not found!");
+            throw new NotFoundException("Role not found!");
         }
         return searchResult
                 .map(roleMapper::roleToRoleDTO)
@@ -53,10 +51,13 @@ public class RoleService {
     public void updateRoleById(long id, Role role) {
         Optional<Role> searchResult = roleRepository.findById(id);
         if (!searchResult.isPresent()) {
-            throw new RoleNotFoundException("Role not found!");
+            throw new NotFoundException("Role not found!");
+        }
+        if (roleRepository.existsByRole(role.getRole())) {
+            throw new ConflictException("Role conflict!");
         }
         if (searchResult.get().getRole().equals("ROLE_ADMIN")) {
-            throw new RoleForbiddenException("Change role admin is forbidden!");
+            throw new ForbiddenException("Forbidden!");
         }
         searchResult.get().setRole(role.getRole());
         roleRepository.save(searchResult.get());
@@ -65,10 +66,10 @@ public class RoleService {
     public void deleteRoleById(long id) {
         Optional<Role> searchResult = roleRepository.findById(id);
         if (!searchResult.isPresent()) {
-            throw new RoleNotFoundException("Role not found!");
+            throw new NotFoundException("Role not found!");
         }
         if (searchResult.get().getRole().equals("ROLE_ADMIN")) {
-            throw new RoleForbiddenException("Delete role admin is forbidden!");
+            throw new ForbiddenException("Forbidden!");
         }
         roleRepository.deleteById(id);
     }

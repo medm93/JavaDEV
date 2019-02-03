@@ -45,7 +45,6 @@ class RoleRestControllerTest {
 
     @AfterEach
     void cleanup() {
-        System.out.println("cleanup");
         JdbcTestUtils.deleteFromTables(jdbcTemplate, "role");
     }
 
@@ -179,14 +178,14 @@ class RoleRestControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
-        Role role = new Role("ROLE_MODERATOR");
+    @Sql("/data-role-test.sql")
+    void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsBadRequest() throws Exception {
+        Role role = new Role();
         ObjectMapper mapper = new ObjectMapper();
         mvc.perform(put("/roles/{id}", 2L).content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
-
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -201,13 +200,12 @@ class RoleRestControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-role-test.sql")
-    void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsBadRequest() throws Exception {
-        Role role = new Role();
+    void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
+        Role role = new Role("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
         mvc.perform(put("/roles/{id}", 2L).content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
