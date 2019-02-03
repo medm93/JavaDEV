@@ -7,14 +7,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pl.medm.javadev.model.dto.LectureDTO;
-import pl.medm.javadev.model.dto.UserDTO;
 import pl.medm.javadev.model.entity.Lecture;
-import pl.medm.javadev.model.entity.User;
 import pl.medm.javadev.service.LectureService;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/lectures")
@@ -29,16 +26,17 @@ public class LectureRestController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<List<LectureDTO>> getAllLectures() {
+    public ResponseEntity<Object> getAllLectures() {
         return ResponseEntity.ok(lectureService.findAllLectures());
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<?> createLecture(@Valid @RequestBody Lecture lecture, BindingResult result) {
+    public ResponseEntity<Object> createLecture(@Valid @RequestBody Lecture lecture, BindingResult result) {
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(result.getAllErrors());
         }
+
         LectureDTO lectureDTO = lectureService.createLecture(lecture);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -50,14 +48,14 @@ public class LectureRestController {
 
     @GetMapping(path = "/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<LectureDTO> findLectureById(@PathVariable Long id) {
+    public ResponseEntity<Object> findLectureById(@PathVariable long id) {
         return ResponseEntity.ok(lectureService.findLectureById(id));
     }
 
     @PutMapping(path = "/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<Object> updateLecture(@PathVariable Long id, @Valid @RequestBody Lecture lecture,
-                                                BindingResult result) {
+    public ResponseEntity<Object> updateLectureById(@PathVariable long id, @Valid @RequestBody Lecture lecture,
+                                                    BindingResult result) {
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(result.getAllErrors());
         }
@@ -67,26 +65,14 @@ public class LectureRestController {
 
     @DeleteMapping(path = "/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<Object> deleteLecture(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteLectureById(@PathVariable Long id) {
         lectureService.deleteLectureById(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping(path = "/{id}/users")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<List<UserDTO>> getAttendance(@PathVariable Long id) {
-        return ResponseEntity.ok(lectureService.findAllUsersForLectureById(id));
-    }
-
-    @PostMapping(path = "/{id}/users")
-    @PreAuthorize("hasAnyRole('USER')")
-    public ResponseEntity<UserDTO> saveUserToLecture(@PathVariable Long id, @RequestBody User user) {
-        UserDTO userDTO = lectureService.saveUserToLecture(id, user);
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(user.getId())
-                .toUri();
-        return ResponseEntity.created(location).body(userDTO);
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<Object> findAllLectureUsersById(@PathVariable Long id) {
+        return ResponseEntity.ok(lectureService.findAllLectureUsersById(id));
     }
 }
