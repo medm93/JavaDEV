@@ -1,48 +1,40 @@
 package pl.medm.javadev.utils.mapper;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 import pl.medm.javadev.model.dto.LectureDTO;
 import pl.medm.javadev.model.entity.Lecture;
 
-import static org.junit.Assert.assertEquals;
-
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = LectureMapperImpl.class)
-public class LectureMapperTest {
+class LectureMapperTest {
 
     private LectureMapper lectureMapper = Mappers.getMapper(LectureMapper.class);
 
     @Test
-    public void testWhenLectureToLectureDTOThenCorrect() {
-        Lecture lecture = new Lecture();
-        lecture.setTitle("Lecture 1 - Spring basics");
-        lecture.setDescription("Introduction to the Spring framework");
-        lecture.setLecturer("Jan Kowalski");
-        lecture.setCompleted(false);
+    void testWhenLectureToLectureDTOThenCorrect() {
+        Lecture lecture = new Lecture(1L, "Java 8", "The basics of language", "Howard Stark", true);
+
         LectureDTO lectureDTO = lectureMapper.lectureToLectureDTO(lecture);
 
-        assertEquals(lecture.getTitle(), lectureDTO.getTitle());
-        assertEquals(lecture.getDescription(), lectureDTO.getDescription());
-        assertEquals(lecture.getLecturer(), lectureDTO.getLecturer());
-        assertEquals(lecture.isCompleted(), lectureDTO.isCompleted());
+        Assertions.assertEquals(lecture.getId(), lectureDTO.getId());
+        Assertions.assertEquals(lecture.getTitle(), lectureDTO.getTitle());
+        Assertions.assertEquals(lecture.getDescription(), lectureDTO.getDescription());
+        Assertions.assertEquals(lecture.getLecturer(), lectureDTO.getLecturer());
+        Assertions.assertEquals(lecture.isCompleted(), lectureDTO.isCompleted());
     }
 
     @Test
-    public void testWhenLectureDTOToLectureThenCorrect() {
-        LectureDTO lectureDTO = new LectureDTO();
-        lectureDTO.setTitle("Lecture 1 - Spring basics");
-        lectureDTO.setDescription("Introduction to the Spring framework");
-        lectureDTO.setLecturer("Jan Kowalski");
-        lectureDTO.setCompleted(false);
+    void testWhenLectureDTOToLectureThenCorrect() {
+        LectureDTO lectureDTO = new LectureDTO(1L, "Java 8", "The basics of language", "Howard Stark", true);
+
         Lecture lecture = lectureMapper.lectureDTOToLecture(lectureDTO);
 
-        assertEquals(lectureDTO.getTitle(), lecture.getTitle());
-        assertEquals(lectureDTO.getDescription(), lecture.getDescription());
-        assertEquals(lectureDTO.getLecturer(), lecture.getLecturer());
-        assertEquals(lectureDTO.isCompleted(), lecture.isCompleted());
+        Assertions.assertEquals(lectureDTO.getId(), lecture.getId());
+        Assertions.assertEquals(lectureDTO.getTitle(), lecture.getTitle());
+        Assertions.assertEquals(lectureDTO.getDescription(), lecture.getDescription());
+        Assertions.assertEquals(lectureDTO.getLecturer(), lecture.getLecturer());
+        Assertions.assertEquals(lectureDTO.isCompleted(), lecture.isCompleted());
     }
 }

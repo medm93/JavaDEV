@@ -14,17 +14,21 @@ class RoleMapperTest {
 
     @Test
     void testWhenRoleToRoleDTOThenCorrect() {
-        Role role = new Role("ROLE_USER");
+        Role role = new Role(1L, "ROLE_USER");
+
         RoleDTO roleDTO = roleMapper.roleToRoleDTO(role);
 
+        Assertions.assertEquals(role.getId(), roleDTO.getId());
         Assertions.assertEquals(role.getRole(), roleDTO.getRole());
     }
 
     @Test
     void testWhenRoleDTOToRoleThenCorrect() {
-        RoleDTO roleDTO = new RoleDTO("ROLE_USER");
+        RoleDTO roleDTO = new RoleDTO(1L, "ROLE_USER");
+
         Role role = roleMapper.roleDTOToRole(roleDTO);
 
+        Assertions.assertEquals(roleDTO.getId(), role.getId());
         Assertions.assertEquals(roleDTO.getRole(), role.getRole());
     }
 }
