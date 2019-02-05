@@ -1,4 +1,4 @@
 package pl.medm.javadev.constraint.group;
 
-public interface UserPassword {
+public interface StudiesData {
 }
