@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ActiveProfiles("test")
 @SpringBootTest
+@Sql("/data-role-test.sql")
 class RoleRestControllerTest {
 
     @Autowired
@@ -51,7 +52,6 @@ class RoleRestControllerTest {
     //FIND ALL ROLES
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-role-test.sql")
     void testWhenFindAllRolesAsAdminThenReturnStatusIsOk() throws Exception {
         mvc.perform(get("/roles"))
                 .andDo(print())
@@ -60,7 +60,6 @@ class RoleRestControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    @Sql("/data-role-test.sql")
     void testWhenFindAllRolesAsUserThenReturnStatusIsForbidden() throws Exception {
         mvc.perform(get("/roles"))
                 .andDo(print())
@@ -69,7 +68,6 @@ class RoleRestControllerTest {
 
     @Test
     @WithAnonymousUser
-    @Sql("/data-role-test.sql")
     void testWhenFindAllRolesAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
         mvc.perform(get("/roles"))
                 .andDo(print())
@@ -99,7 +97,6 @@ class RoleRestControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-role-test.sql")
     void testWhenCreateRoleAsAdminThenReturnStatusIsConflict() throws Exception {
         Role role = new Role("ROLE_USER");
         ObjectMapper mapper = new ObjectMapper();
@@ -131,7 +128,6 @@ class RoleRestControllerTest {
     //FIND ROLE BY ID
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-role-test.sql")
     void testWhenFindRoleByIdAsAdminThenReturnStatusIsOk() throws Exception {
         mvc.perform(get("/roles/{id}", 1L))
                 .andDo(print())
@@ -141,14 +137,13 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenFindRoleByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
-        mvc.perform(get("/roles/{id}", 1L))
+        mvc.perform(get("/roles/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @WithMockUser(roles = "USER")
-    @Sql("/data-role-test.sql")
     void testWhenFindRoleByIdAsUserThenReturnStatusIsForbidden() throws Exception {
         mvc.perform(get("/roles/{id}", 1L))
                 .andDo(print())
@@ -157,7 +152,6 @@ class RoleRestControllerTest {
 
     @Test
     @WithAnonymousUser
-    @Sql("/data-role-test.sql")
     void testWhenFindRoleByIdAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
         mvc.perform(get("/roles/{id}", 1L))
                 .andDo(print())
@@ -167,7 +161,6 @@ class RoleRestControllerTest {
     //UPDATE ROLE BY ID
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-role-test.sql")
     void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsNoContent() throws Exception {
         Role role = new Role("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
@@ -178,7 +171,6 @@ class RoleRestControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-role-test.sql")
     void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsBadRequest() throws Exception {
         Role role = new Role();
         ObjectMapper mapper = new ObjectMapper();
@@ -189,7 +181,6 @@ class RoleRestControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-role-test.sql")
     void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsForbidden() throws Exception {
         Role role = new Role("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
@@ -203,14 +194,13 @@ class RoleRestControllerTest {
     void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
         Role role = new Role("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/roles/{id}", 2L).content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/roles/{id}", 3L).content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @WithMockUser(roles = "USER")
-    @Sql("/data-role-test.sql")
     void testWhenUpdateRoleByIdAsUserThenReturnStatusIsForbidden() throws Exception {
         Role role = new Role("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
@@ -221,7 +211,6 @@ class RoleRestControllerTest {
 
     @Test
     @WithAnonymousUser
-    @Sql("/data-role-test.sql")
     void testWhenUpdateRoleByIdAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
         Role role = new Role("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
@@ -233,7 +222,6 @@ class RoleRestControllerTest {
     //DELETE ROLE BY ID
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-role-test.sql")
     void testWhenDeleteRoleByIdAsAdminThenReturnStatusIsNoContent() throws Exception {
         mvc.perform(delete("/roles/{id}", 2L))
                 .andDo(print())
@@ -243,14 +231,13 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenDeleteRoleByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
-        mvc.perform(delete("/roles/{id}", 2L))
+        mvc.perform(delete("/roles/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-role-test.sql")
     void testWhenDeleteRoleByIdAsAdminThenReturnStatusIsForbidden() throws Exception {
         mvc.perform(delete("/roles/{id}", 1L))
                 .andDo(print())
@@ -260,7 +247,6 @@ class RoleRestControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    @Sql("/data-role-test.sql")
     void testWhenDeleteRoleByIdAsUserThenReturnStatusIsForbidden() throws Exception {
         mvc.perform(delete("/roles/{id}", 2L))
                 .andDo(print())
@@ -269,7 +255,6 @@ class RoleRestControllerTest {
 
     @Test
     @WithAnonymousUser
-    @Sql("/data-role-test.sql")
     void testWhenDeleteRoleByIdAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
         mvc.perform(delete("/roles/{id}", 2L))
                 .andDo(print())

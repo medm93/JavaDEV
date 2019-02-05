@@ -7,9 +7,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import pl.medm.javadev.constraint.group.UserData;
-import pl.medm.javadev.constraint.group.UserPassword;
-import pl.medm.javadev.constraint.group.UserRegistration;
+import pl.medm.javadev.constraint.group.PasswordData;
+import pl.medm.javadev.constraint.group.CreateUser;
+import pl.medm.javadev.constraint.group.UpdateUser;
 import pl.medm.javadev.model.dto.LectureDTO;
 import pl.medm.javadev.model.dto.UserDTO;
 import pl.medm.javadev.model.entity.User;
@@ -31,14 +31,14 @@ public class UserRestController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<List<UserDTO>> findAllUsers() {
+    public ResponseEntity<Object> findAllUsers() {
         return ResponseEntity.ok(userService.findAllUsers());
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<Object> saveUser(@Validated(UserRegistration.class) @RequestBody User user,
-                                           BindingResult result) {
+    public ResponseEntity<Object> createUser(@Validated(CreateUser.class) @RequestBody User user,
+                                             BindingResult result) {
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(result.getAllErrors());
         }
@@ -53,35 +53,29 @@ public class UserRestController {
 
     @GetMapping(path = "/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<UserDTO> findUserById(@PathVariable Long id) {
+    public ResponseEntity<Object> findUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findUserById(id));
-    }
-
-    @GetMapping(path = "/{id}/lectures")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<List<LectureDTO>> findAllLecturesByUserId(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.findAllLecturesByUserId(id));
     }
 
     @PutMapping(path = "/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Object> updateUserDataById(@PathVariable Long id, @Validated(UserData.class) @RequestBody User user,
-                                                     BindingResult result) {
+    public ResponseEntity<Object> updateUserById(@PathVariable Long id, @Validated(UpdateUser.class) @RequestBody User user,
+                                                 BindingResult result) {
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(result.getAllErrors());
         }
-        userService.updateUserDataById(id, user);
+        userService.updateUserById(id, user);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping(path = "/{id}/password")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Object> updateUserPasswordById(@PathVariable Long id, @Validated(UserPassword.class) @RequestBody User user,
+    public ResponseEntity<Object> updateUserPasswordById(@PathVariable Long id, @Validated(PasswordData.class) @RequestBody User user,
                                                          BindingResult result) {
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(result.getAllErrors());
         }
-        userService.updateUserPassword(id, user);
+        userService.updateUserPasswordById(id, user);
         return ResponseEntity.noContent().build();
     }
 
@@ -90,5 +84,11 @@ public class UserRestController {
     public ResponseEntity<Object> deleteUserById(@PathVariable Long id) {
         userService.deleteUserById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping(path = "/{id}/lectures")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<List<LectureDTO>> findAllLecturesByUserId(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.findAllUserLecturesById(id));
     }
 }

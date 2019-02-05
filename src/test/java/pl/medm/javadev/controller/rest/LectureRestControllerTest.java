@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ActiveProfiles("test")
 @SpringBootTest
+@Sql("/data-lecture-test.sql")
 class LectureRestControllerTest {
 
     @Autowired
@@ -51,7 +52,6 @@ class LectureRestControllerTest {
     //FIND ALL LECTURES
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-lecture-test.sql")
     void testWhenFindAllLecturesAsAdminThenReturnStatusIsOk() throws Exception {
         mvc.perform(get("/lectures"))
                 .andDo(print())
@@ -60,7 +60,6 @@ class LectureRestControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    @Sql("/data-lecture-test.sql")
     void testWhenFindAllLecturesAsUserThenReturnStatusIsOk() throws Exception {
         mvc.perform(get("/lectures"))
                 .andDo(print())
@@ -69,7 +68,6 @@ class LectureRestControllerTest {
 
     @Test
     @WithAnonymousUser
-    @Sql("/data-lecture-test.sql")
     void testWhenFindAllLecturesAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
         mvc.perform(get("/lectures"))
                 .andDo(print())
@@ -80,7 +78,7 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenCreateLecturesAsAdminThenReturnStatusIsCreated() throws Exception {
-        Lecture lecture = new Lecture("Spring", "The basic of framework", "Tony Stark", false);
+        Lecture lecture = new Lecture("Hibernate", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
         mvc.perform(post("/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -100,9 +98,8 @@ class LectureRestControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-lecture-test.sql")
     void testWhenCreateLecturesAsAdminThenReturnStatusIsConflict() throws Exception {
-        Lecture lecture = new Lecture("Java 8", "The basic of language", "Tony Stark", false);
+        Lecture lecture = new Lecture("Java 8", "The basic of language", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
         mvc.perform(post("/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -112,7 +109,7 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenCreateLecturesAsUserThenReturnStatusIsForbidden() throws Exception {
-        Lecture lecture = new Lecture("Spring", "The basic of framework", "Tony Stark", false);
+        Lecture lecture = new Lecture("Spring", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
         mvc.perform(post("/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -122,7 +119,7 @@ class LectureRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenCreateLecturesAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        Lecture lecture = new Lecture("Spring", "The basic of framework", "Tony Stark", false);
+        Lecture lecture = new Lecture("Spring", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
         mvc.perform(post("/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -132,7 +129,6 @@ class LectureRestControllerTest {
     //FIND LECTURE BY ID
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-lecture-test.sql")
     void testWhenFindLectureByIdAsAdminThenReturnStatusIsOk() throws Exception {
         mvc.perform(get("/lectures/{id}", 1L))
                 .andDo(print())
@@ -142,7 +138,7 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenFindLectureByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
-        mvc.perform(get("/lectures/{id}", 1L))
+        mvc.perform(get("/lectures/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -159,14 +155,13 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenFindLectureByIdAsUserThenReturnStatusIsNotFound() throws Exception {
-        mvc.perform(get("/lectures/{id}", 1L))
+        mvc.perform(get("/lectures/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @WithAnonymousUser
-    @Sql("/data-lecture-test.sql")
     void testWhenFindLectureByIdAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
         mvc.perform(get("/lectures/{id}", 1L))
                 .andDo(print())
@@ -176,9 +171,8 @@ class LectureRestControllerTest {
     //UPDATE LECTURE BY ID
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-lecture-test.sql")
     void testWhenUpdateLectureByIdAsAdminThenReturnStatusIsNoContent() throws Exception {
-        Lecture lecture = new Lecture("Hibernate", "The basic of framework", "Tony Stark", false);
+        Lecture lecture = new Lecture("Hibernate", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
         mvc.perform(put("/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -199,9 +193,9 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateLectureByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
-        Lecture lecture = new Lecture("Hibernate", "The basic of framework", "Tony Stark", false);
+        Lecture lecture = new Lecture("Hibernate", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/lectures/{id}", 3L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -210,7 +204,7 @@ class LectureRestControllerTest {
     @WithMockUser(roles = "ADMIN")
     @Sql("/data-lecture-test.sql")
     void testWhenUpdateLectureByIdAsAdminThenReturnStatusIsConflict() throws Exception {
-        Lecture lecture = new Lecture("Java 8", "The basic of language", "Tony Stark", true);
+        Lecture lecture = new Lecture("Java 8", "The basic of language", "Howard Stark", true);
         ObjectMapper mapper = new ObjectMapper();
         mvc.perform(put("/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -219,9 +213,8 @@ class LectureRestControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    @Sql("/data-lecture-test.sql")
     void testWhenUpdateLectureByIdAsUserThenReturnStatusIsForbidden() throws Exception {
-        Lecture lecture = new Lecture("Java 8", "The basic of language", "Tony Stark", true);
+        Lecture lecture = new Lecture("Hibernate", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
         mvc.perform(put("/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -230,9 +223,8 @@ class LectureRestControllerTest {
 
     @Test
     @WithAnonymousUser
-    @Sql("/data-lecture-test.sql")
     void testWhenUpdateLectureByIdAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        Lecture lecture = new Lecture("Java 8", "The basic of language", "Tony Stark", true);
+        Lecture lecture = new Lecture("Hibernate", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
         mvc.perform(put("/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -242,7 +234,6 @@ class LectureRestControllerTest {
     //DELETE LECTURE BY ID
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-lecture-test.sql")
     void testWhenDeleteLectureByIdAsAdminThenReturnStatusInNoContent() throws Exception {
         mvc.perform(delete("/lectures/{id}", 2L))
                 .andDo(print())
@@ -252,7 +243,7 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenDeleteLectureByIdAsAdminThenReturnStatusInNotFound() throws Exception {
-        mvc.perform(delete("/lectures/{id}", 2L))
+        mvc.perform(delete("/lectures/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -268,7 +259,6 @@ class LectureRestControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    @Sql("/data-lecture-test.sql")
     void testWhenDeleteLectureByIdAsUserThenReturnStatusInForbidden() throws Exception {
         mvc.perform(delete("/lectures/{id}", 2L))
                 .andDo(print())
@@ -277,7 +267,6 @@ class LectureRestControllerTest {
 
     @Test
     @WithAnonymousUser
-    @Sql("/data-lecture-test.sql")
     void testWhenDeleteLectureByIdAsAnonymousUserThenReturnStatusInUnauthorized() throws Exception {
         mvc.perform(delete("/lectures/{id}", 2L))
                 .andDo(print())
@@ -287,7 +276,7 @@ class LectureRestControllerTest {
     //FIND ALL LECTURE USERS
     @Test
     @WithMockUser(roles = "ADMIN")
-    @Sql("/data-lecture-test.sql")
+    @Sql({"/data-user-test.sql", "/data-lecture-test.sql", "/data-user-lecture-test.sql"})
     void testWhenFindAllLectureUsersByIdAsAdminThenReturnStatusInOk() throws Exception {
         mvc.perform(get("/lectures/{id}/users", 1L))
                 .andDo(print())
@@ -296,7 +285,7 @@ class LectureRestControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    @Sql("/data-lecture-test.sql")
+    @Sql({"/data-user-test.sql", "/data-lecture-test.sql", "/data-user-lecture-test.sql"})
     void testWhenFindAllLectureUsersByIdAsUserThenReturnStatusInForbidden() throws Exception {
         mvc.perform(get("/lectures/{id}/users", 1L))
                 .andDo(print())
@@ -305,7 +294,7 @@ class LectureRestControllerTest {
 
     @Test
     @WithAnonymousUser
-    @Sql("/data-lecture-test.sql")
+    @Sql({"/data-user-test.sql", "/data-lecture-test.sql", "/data-user-lecture-test.sql"})
     void testWhenFindAllLectureUsersByIdAsAnonymousUserThenReturnStatusInUnauthorized() throws Exception {
         mvc.perform(get("/lectures/{id}/users", 1L))
                 .andDo(print())
