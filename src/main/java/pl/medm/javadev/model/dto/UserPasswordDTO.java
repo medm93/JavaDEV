@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class RoleDTO {
-
-    private Long id;
-    private String role;
+public class UserPasswordDTO {
+    Long id;
+    String password;
 }
