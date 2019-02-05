@@ -36,17 +36,6 @@ public class Lecture implements Serializable {
     )
     private List<User> users = new ArrayList<>();
 
-    public void addUser(User user) {
-        user.getLectures().add(this);
-        users.add(user);
-    }
-
-    public Lecture(String title, String description, String lecturer) {
-        this.title = title;
-        this.description = description;
-        this.lecturer = lecturer;
-    }
-
     public Lecture(String title, String description, String lecturer, boolean completed) {
         this.title = title;
         this.description = description;
@@ -60,12 +49,5 @@ public class Lecture implements Serializable {
         this.description = description;
         this.lecturer = lecturer;
         this.completed = completed;
-    }
-
-    public Lecture(Long id, String title, String description, String lecturer) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.lecturer = lecturer;
     }
 }
