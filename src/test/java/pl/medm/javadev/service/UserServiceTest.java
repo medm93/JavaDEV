@@ -10,12 +10,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import pl.medm.javadev.model.dto.LectureDTO;
 import pl.medm.javadev.model.dto.UserDTO;
+import pl.medm.javadev.model.dto.UserPasswordDTO;
 import pl.medm.javadev.model.entity.Lecture;
 import pl.medm.javadev.model.entity.User;
 import pl.medm.javadev.repository.RoleRepository;
 import pl.medm.javadev.repository.UserRepository;
-import pl.medm.javadev.utils.exception.UserExistsException;
-import pl.medm.javadev.utils.exception.UserNotFoundException;
+import pl.medm.javadev.utils.exception.ConflictException;
+import pl.medm.javadev.utils.exception.NotFoundException;
 import pl.medm.javadev.utils.mapper.LectureMapper;
 import pl.medm.javadev.utils.mapper.UserMapper;
 
@@ -48,162 +49,232 @@ class UserServiceTest {
         this.userService = new UserService(userRepository, roleRepository, passwordEncoder, userMapper, lectureMapper);
     }
 
+    //FIND ALL USERS
     @Test
-    void testFindAllUser() {
+    void testWhenFindAllUsersThenUsersFound() {
         List<User> users = Arrays.asList(
-                new User(1L, "Tony", "Stark", "ironman@gmail.com", "zaq1@WSX"),
-                new User(2L, "James", "Bond", "007@gmail.com", "zaq1@WSX")
+                new User(1L, "Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX",
+                        "1", "Automatics", "000001"),
+                new User(2, "Steven", "Rogers", "capitan.america@marvel.com", "zaq1@WSX",
+                        "2", "Electronics", "000002")
         );
-        List<UserDTO> expected = users.stream().map(userMapper::userToUserDTO).collect(Collectors.toList());
         when(userRepository.findAll()).thenReturn(users);
 
+        List<UserDTO> expected = users.stream()
+                .map(userMapper::userToUserDTO)
+                .collect(Collectors.toList());
         List<UserDTO> actual = userService.findAllUsers();
+
         Assertions.assertIterableEquals(expected, actual);
         verify(userRepository, times(1)).findAll();
     }
 
+    //CREATE USER
     @Test
-    void testCreateUserWhenUserExists() {
-        User user = new User(1L, "James", "Bond", "007@gmail.com", "zaq1@WSX");
-        when(userRepository.existsByEmail("007@gmail.com")).thenReturn(true);
+    void testWhenCreateUserThenUserCreated() {
+        User user = new User(1L, "Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX",
+                "1", "Automatics", "000001");
+        when(userRepository.existsByEmailOrIndexNumber("hawkeye@marvel.com", "000001")).thenReturn(false);
 
-        Throwable exception = assertThrows(UserExistsException.class, () ->
+        UserDTO expected = userMapper.userToUserDTO(user);
+        UserDTO actual = userService.createUser(user);
+
+        Assertions.assertEquals(expected, actual);
+        verify(userRepository, times(1)).existsByEmailOrIndexNumber("hawkeye@marvel.com", "000001");
+        verify(userRepository, times(1)).save(user);
+
+    }
+
+    @Test
+    void testWhenCreateUserThenUserConflict() {
+        User user = new User(1L, "Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX",
+                "1", "Automatics", "000001");
+        when(userRepository.existsByEmailOrIndexNumber("hawkeye@marvel.com", "000001")).thenReturn(true);
+
+        Throwable exception = assertThrows(ConflictException.class, () ->
                 userService.createUser(user)
         );
-        Assertions.assertEquals("This email already exist!", exception.getMessage());
-        verify(userRepository, times(1)).existsByEmail("007@gmail.com");
+
+        Assertions.assertEquals("User conflict!", exception.getMessage());
+        verify(userRepository, times(1)).existsByEmailOrIndexNumber("hawkeye@marvel.com", "000001");
+        verify(userRepository, times(0)).save(user);
     }
 
+    //FIND USER BY ID
     @Test
-    void testCreateUserWhenUserNotExists() {
-        User user = new User(1L, "James", "Bond", "007@gmail.com", "zaq1@WSX");
-        UserDTO expected = new UserDTO(1L, "James", "Bond", "007@gmail.com", null);
-        when(userRepository.existsByEmail("007@gmail.com")).thenReturn(false);
-
-        UserDTO actual = userService.createUser(user);
-        Assertions.assertEquals(expected, actual);
-        verify(userRepository, times(1)).save(user);
-        verify(userRepository, times(1)).existsByEmail("007@gmail.com");
-    }
-
-    @Test
-    void testFindUserByIdWhenUserExists() {
-        User user = new User(1L, "James", "Bond", "007@gmail.com", "zaq1@WSX");
-        UserDTO expected = userMapper.userToUserDTO(user);
+    void testWhenFindUserByIdThenUserFound() {
+        User user = new User(1L, "Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX",
+                "1", "Automatics", "000001");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
+        UserDTO expected = userMapper.userToUserDTO(user);
         UserDTO actual = userService.findUserById(1L);
+
         Assertions.assertEquals(expected, actual);
         verify(userRepository, times(1)).findById(1L);
+
     }
 
     @Test
-    void testFindUserByIdWhenUserNotExists() {
+    void testWhenFindUserByIdThenUserNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Throwable exception = assertThrows(UserNotFoundException.class, () ->
+        Throwable exception = assertThrows(NotFoundException.class, () ->
                 userService.findUserById(1L)
         );
-        Assertions.assertEquals("Not found user by id=1", exception.getMessage());
+
+        Assertions.assertEquals("User not found!", exception.getMessage());
         verify(userRepository, times(1)).findById(1L);
     }
 
+    //UPDATE USER BY ID
     @Test
-    void testUpdateUserDataByIdWhenUserExists() {
-        User updated = new User(null, "James", "James", "007@gmail.com", null);
-        User user = new User(1L, "Tony", "Stark", "ironman@gmail.com", "zaq1@WSX");
-        UserDTO expected = new UserDTO(1L, "James", "James", "007@gmail.com", "zaq1@WSX");
-
+    void testWhenUpdateUserByIdThenUserUpdated() {
+        User user = new User(1L, "Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX",
+                "1", "Automatics", "000001");
+        User updated = new User(1L, "Bruce", "Banner", "hulk@marvel.com", null,
+                "3", "Informatics", "000003");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        userService.updateUserDataById(1L, updated);
-        UserDTO searchResult = userService.findUserById(1L);
+        when(userRepository.existsByEmailOrIndexNumber("hulk@marvel.com", "000003")).thenReturn(false);
 
-        Assertions.assertEquals(expected, searchResult);
+        userService.updateUserById(1L, updated);
+        UserDTO expected = userMapper.userToUserDTO(updated);
+        UserDTO actual = userService.findUserById(1L);
+
+        Assertions.assertEquals(expected, actual);
         verify(userRepository, times(2)).findById(1L);
+        verify(userRepository, times(1)).existsByEmailOrIndexNumber("hulk@marvel.com", "000003");
         verify(userRepository, times(1)).save(user);
+
     }
 
     @Test
-    void testUpdateUserDataByIdWhenUserNotExists() {
-        User updated = new User(null, "James", "Bond", "007@gmail.com", null);
+    void testWhenUpdateUserByIdThenUserNotFound() {
+        User user = new User(1L, "Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX",
+                "1", "Automatics", "000001");
+        User updated = new User(1L, "Bruce", "Banner", "hulk@marvel.com", null,
+                "3", "Informatics", "000003");
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Throwable exception = assertThrows(UserNotFoundException.class, () ->
-                userService.updateUserPassword(1L, updated)
+        Throwable exception = assertThrows(NotFoundException.class, () ->
+                userService.updateUserById(1L, updated)
         );
-        Assertions.assertEquals("Not found user by id=1", exception.getMessage());
+
+        Assertions.assertEquals("User not found!", exception.getMessage());
         verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(0)).existsByEmailOrIndexNumber("hulk@marvel.com", "000003");
+        verify(userRepository, times(0)).save(user);
     }
 
     @Test
-    void testUpdateUserPasswordWhenUserExists() {
-        User updated = new User(null, null, null, null, "xsw2!QAZ");
-        User user = new User(1L, "James", "Bond", "007@gmail.com", "zaq1@WSX");
-        UserDTO expected = new UserDTO(1L, "James", "Bond", "007@gmail.com", "xsw2!QAZ");
+    void testWhenUpdateUserByIdThenUserConflict() {
+        User user = new User(1L, "Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX",
+                "1", "Automatics", "000001");
+        User updated = new User(1L, "Bruce", "Banner", "hulk@marvel.com", null,
+                "3", "Informatics", "000003");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.existsByEmailOrIndexNumber("hulk@marvel.com", "000003")).thenReturn(true);
+
+        Throwable exception = assertThrows(ConflictException.class, () ->
+                userService.updateUserById(1L, updated)
+        );
+
+        Assertions.assertEquals("User conflict!", exception.getMessage());
+        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).existsByEmailOrIndexNumber("hulk@marvel.com", "000003");
+        verify(userRepository, times(0)).save(user);
+    }
+
+    //UPDATE USER PASSWORD BY ID
+    @Test
+    void testWhenUpdateUserPasswordByIdThenUserPasswordUpdated() {
+        User user = new User(1L, "Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX",
+                "1", "Automatics", "000001");
+        User updated = new User(1L, null, null, null, "xsw2!QAZ",
+                null, null, null);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        userService.updateUserPassword(1L, updated);
-        UserDTO actual = userService.findUserById(1L);
+        userService.updateUserPasswordById(1L, updated);
+        UserPasswordDTO expected = userMapper.userToUserPasswordDTO(updated);
+        UserPasswordDTO actual = userService.findUserPasswordById(1L);
+
         Assertions.assertEquals(expected, actual);
         verify(userRepository, times(2)).findById(1L);
         verify(userRepository, times(1)).save(user);
+
     }
 
     @Test
-    void testUpdateUserPasswordWhenUserNotExists() {
-        User updated = new User(null, null, null, null, "xsw2!QAZ");
+    void testWhenUpdateUserPasswordByIdThenUserNotFound() {
+        User user = new User(1L, "Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX",
+                "1", "Automatics", "000001");
+        User updated = new User(1L, null, null, null, "xsw2!QAZ",
+                null, null, null);
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Throwable exception = assertThrows(UserNotFoundException.class, () ->
-                userService.updateUserPassword(1L, updated)
+        Throwable exception = assertThrows(NotFoundException.class, () ->
+                userService.updateUserById(1L, updated)
         );
-        Assertions.assertEquals("Not found user by id=1", exception.getMessage());
+
+        Assertions.assertEquals("User not found!", exception.getMessage());
         verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(0)).save(user);
     }
 
+    //DELETE USER BY ID
     @Test
-    void testDeleteUserByIdWhenUserExists() {
+    void testWhenDeleteUserByIdThenUserDeleted() {
         when(userRepository.existsById(1L)).thenReturn(true);
 
         userService.deleteUserById(1L);
+
         verify(userRepository, times(1)).existsById(1L);
+        verify(userRepository, times(1)).deleteById(1L);
     }
 
     @Test
-    void testDeleteUserByIdWhenUserNotExists() {
+    void testWhenDeleteUserByIdThenUserNotFound() {
         when(userRepository.existsById(1L)).thenReturn(false);
 
-        Throwable exception = assertThrows(UserNotFoundException.class, () ->
+        Throwable exception = assertThrows(NotFoundException.class, () ->
                 userService.deleteUserById(1L)
         );
-        Assertions.assertEquals("Not found user by id=1", exception.getMessage());
+
+        Assertions.assertEquals("User not found!", exception.getMessage());
         verify(userRepository, times(1)).existsById(1L);
+        verify(userRepository, times(0)).deleteById(1L);
     }
 
+    //FIND ALL USER LECTURES
     @Test
-    void testFindAllLecturesByUserIdWhenUserExists() {
+    void testWhenFindAllUserLecturesThenUserLecturesFound() {
+        User user = new User(1L, "Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX",
+                "1", "Automatics", "000001");
         List<Lecture> lectures = Arrays.asList(
                 new Lecture(1L, "Java 8", "The basics of language", "Tony Stark", true),
-                new Lecture(2L, "Spring", "The basics of framework", "Tony Stark", false)
+                new Lecture(2L, "Spring", "The basics of framework", "Bruce Banner", false)
         );
-        User user = new User(1L, "James", "Bond", "007@gmail.com", "zaq1@WSX");
         user.getLectures().addAll(lectures);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        List<LectureDTO> actual = userService.findAllLecturesByUserId(1L);
-        List<LectureDTO> expected = lectures.stream().map(lectureMapper::lectureToLectureDTO).collect(Collectors.toList());
+        List<LectureDTO> expected = lectures.stream()
+                .map(lectureMapper::lectureToLectureDTO)
+                .collect(Collectors.toList());
+        List<LectureDTO> actual = userService.findAllUserLecturesById(1L);
+
         Assertions.assertEquals(expected, actual);
         verify(userRepository, times(1)).findById(1L);
     }
 
     @Test
-    void testFindAllLecturesByUserIdWhenUserNotExists() {
+    void testWhenFindAllUserLecturesThenUserLecturesNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Throwable exception = assertThrows(UserNotFoundException.class, () ->
-                userService.findAllLecturesByUserId(1L)
+        Throwable exception = assertThrows(NotFoundException.class, () ->
+                userService.findAllUserLecturesById(1L)
         );
-        Assertions.assertEquals("Not found user by id=1", exception.getMessage());
+
+        Assertions.assertEquals("User not found!", exception.getMessage());
         verify(userRepository, times(1)).findById(1L);
     }
 }

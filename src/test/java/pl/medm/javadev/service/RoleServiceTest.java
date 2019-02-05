@@ -69,7 +69,7 @@ class RoleServiceTest {
     }
 
     @Test
-    void testWhenCreateRoleThenRoleNotConflict() {
+    void testWhenCreateRoleThenRoleCreated() {
         Role role = new Role(1L, "ROLE_MODERATOR");
         when(roleRepository.existsByRole("ROLE_MODERATOR")).thenReturn(false);
 
@@ -108,9 +108,9 @@ class RoleServiceTest {
 
     //UPDATE ROLE BY ID
     @Test
-    void testWhenUpdateRoleByIdThenRoleFound() {
+    void testWhenUpdateRoleByIdThenRoleUpdated() {
         Role role = new Role(1L, "ROLE_USER");
-        Role updated = new Role("ROLE_MODERATOR");
+        Role updated = new Role(1L, "ROLE_MODERATOR");
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
 
         roleService.updateRoleById(1L, updated);
@@ -125,7 +125,7 @@ class RoleServiceTest {
     @Test
     void testWhenUpdateRoleByIdThenRoleNotFound() {
         Role role = new Role(1L, "ROLE_USER");
-        Role updated = new Role("ROLE_MODERATOR");
+        Role updated = new Role(1L, "ROLE_MODERATOR");
         when(roleRepository.findById(1L)).thenReturn(Optional.empty());
 
         Throwable exception = assertThrows(NotFoundException.class, () ->
@@ -138,8 +138,8 @@ class RoleServiceTest {
 
     @Test
     void testWhenUpdateRoleByIdThenUpdateIsForbidden() {
-        Role role = new Role("ROLE_ADMIN");
-        Role updated = new Role("ROLE_MODERATOR");
+        Role role = new Role(1L, "ROLE_ADMIN");
+        Role updated = new Role(1L, "ROLE_MODERATOR");
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
 
         Throwable exception = assertThrows(ForbiddenException.class, () ->
@@ -152,8 +152,8 @@ class RoleServiceTest {
 
     //DELETE ROLE BY ID
     @Test
-    void testWhenDeleteRoleByIdThenRoleFound() {
-        Role role = new Role("ROLE_USER");
+    void testWhenDeleteRoleByIdThenRoleDeleted() {
+        Role role = new Role(1L, "ROLE_USER");
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
 
         roleService.deleteRoleById(1L);
@@ -175,7 +175,7 @@ class RoleServiceTest {
 
     @Test
     void testWhenDeleteRoleByIdThenDeleteIsForbidden() {
-        Role role = new Role("ROLE_ADMIN");
+        Role role = new Role(1L , "ROLE_ADMIN");
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
 
         Throwable exception = assertThrows(ForbiddenException.class, () ->

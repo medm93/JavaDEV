@@ -221,8 +221,10 @@ class LectureServiceTest {
     @Test
     void testWhenFindAllLectureUsersByIdThenLectureFound() {
         List<User> users = Arrays.asList(
-                new User(1L, "Tony", "Stark", "ironman@marvel.com", "zaq1@WSX"),
-                new User(2L, "Steven ", "Rogers", "capitanameryka@marvel.com", "zaq1@WSX")
+                new User(1L, "Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX",
+                        "1", "Automatics", "000001"),
+                new User(2L, "Steven", "Rogers", "capitan.america@marvel.com", "zaq1@WSX",
+                        "2", "Electronics", "000002")
         );
         Lecture lecture = new Lecture(1L, "Spring Boot", "The basics of framework", "James Bond", false);
         lecture.getUsers().addAll(users);

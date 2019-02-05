@@ -5,12 +5,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.medm.javadev.model.dto.LectureDTO;
 import pl.medm.javadev.model.dto.UserDTO;
+import pl.medm.javadev.model.dto.UserPasswordDTO;
 import pl.medm.javadev.model.entity.Role;
 import pl.medm.javadev.model.entity.User;
 import pl.medm.javadev.repository.RoleRepository;
 import pl.medm.javadev.repository.UserRepository;
-import pl.medm.javadev.utils.exception.UserExistsException;
-import pl.medm.javadev.utils.exception.UserNotFoundException;
+import pl.medm.javadev.utils.exception.ConflictException;
+import pl.medm.javadev.utils.exception.NotFoundException;
 import pl.medm.javadev.utils.mapper.LectureMapper;
 import pl.medm.javadev.utils.mapper.UserMapper;
 
@@ -39,63 +40,71 @@ public class UserService {
     }
 
     public List<UserDTO> findAllUsers() {
-        return userRepository.findAll()
-                .stream()
+        return userRepository.findAll().stream()
                 .map(userMapper::userToUserDTO)
                 .collect(Collectors.toList());
     }
 
     public UserDTO createUser(User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new UserExistsException("This email already exist!");
+        if (userRepository.existsByEmailOrIndexNumber(user.getEmail(), user.getIndexNumber())) {
+            throw new ConflictException("User conflict!");
         }
         return addWithDefaultRole(user);
     }
 
-    public UserDTO findUserById(Long id) {
+    public UserDTO findUserById(long id) {
         Optional<User> searchResult = userRepository.findById(id);
         if (!searchResult.isPresent()) {
-            throw new UserNotFoundException("Not found user by id=" + id);
+            throw new NotFoundException("User not found!");
         }
         return searchResult.map(userMapper::userToUserDTO).get();
     }
 
-    public void updateUserDataById(Long id, User user) {
+    public UserPasswordDTO findUserPasswordById(long id) {
         Optional<User> searchResult = userRepository.findById(id);
         if (!searchResult.isPresent()) {
-            throw new UserNotFoundException("Not found user by id=" + id);
+            throw new NotFoundException("User not found!");
         }
-        User userInDB = searchResult.get();
-        userInDB.setFirstName(user.getFirstName());
-        userInDB.setLastName(user.getLastName());
-        userInDB.setEmail(user.getEmail());
-        userInDB.setYearOfStudy(user.getYearOfStudy());
-        userInDB.setFieldOfStudy(user.getFieldOfStudy());
-        userInDB.setIndexNumber(user.getIndexNumber());
-        userRepository.save(userInDB);
+        return searchResult.map(userMapper::userToUserPasswordDTO).get();
     }
 
-    public void updateUserPassword(Long id, User user) {
+    public void updateUserById(long id, User user) {
         Optional<User> searchResult = userRepository.findById(id);
         if (!searchResult.isPresent()) {
-            throw new UserNotFoundException("Not found user by id=" + id);
+            throw new NotFoundException("User not found!");
         }
-        User userInDB = searchResult.get();
-        userInDB.setPassword(user.getPassword());
-        userRepository.save(userInDB);
+        if (userRepository.existsByEmailOrIndexNumber(user.getEmail(), user.getIndexNumber())) {
+            throw new ConflictException("User conflict!");
+        }
+        searchResult.get().setFirstName(user.getFirstName());
+        searchResult.get().setLastName(user.getLastName());
+        searchResult.get().setEmail(user.getEmail());
+        searchResult.get().setYearOfStudy(user.getYearOfStudy());
+        searchResult.get().setFieldOfStudy(user.getFieldOfStudy());
+        searchResult.get().setIndexNumber(user.getIndexNumber());
+        userRepository.save(searchResult.get());
     }
 
-    public void deleteUserById(Long id) {
+    public void updateUserPasswordById(long id, User user) {
+        Optional<User> searchResult = userRepository.findById(id);
+        if (!searchResult.isPresent()) {
+            throw new NotFoundException("User not found!");
+        }
+        searchResult.get().setPassword(user.getPassword());
+        userRepository.save(searchResult.get());
+    }
+
+    public void deleteUserById(long id) {
         if (!userRepository.existsById(id)) {
-            throw new UserNotFoundException("Not found user by id=" + id);
+            throw new NotFoundException("User not found!");
         }
         userRepository.deleteById(id);
     }
 
-    public List<LectureDTO> findAllLecturesByUserId(Long id) {
+    public List<LectureDTO> findAllUserLecturesById(long id) {
         Optional<User> searchResult = userRepository.findById(id);
         if (!searchResult.isPresent()) {
-            throw new UserNotFoundException("Not found user by id=" + id);
+            throw new NotFoundException("User not found!");
         }
         return searchResult
                 .get()
