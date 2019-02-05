@@ -57,7 +57,7 @@ Project is created with:
   * student login as email or index number.
 
 # Status
-Project is in progress. The app is improving and there are adding next technologie.
+Project is in progress. The app is improving and there are adding next technologies.
 
 # Inspiration
 Project based on homework of JavaDev training.
