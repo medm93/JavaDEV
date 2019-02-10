@@ -16,11 +16,12 @@ import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import pl.medm.javadev.model.entity.Role;
+import pl.medm.javadev.model.dto.RoleDTO;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
@@ -53,7 +54,7 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenFindAllRolesAsAdminThenReturnStatusIsOk() throws Exception {
-        mvc.perform(get("/roles"))
+        mvc.perform(get("/api/roles"))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -61,7 +62,7 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenFindAllRolesAsUserThenReturnStatusIsForbidden() throws Exception {
-        mvc.perform(get("/roles"))
+        mvc.perform(get("/api/roles"))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -69,7 +70,7 @@ class RoleRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenFindAllRolesAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        mvc.perform(get("/roles"))
+        mvc.perform(get("/api/roles"))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -78,19 +79,20 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenCreateRoleAsAdminThenReturnStatusIsCreated() throws Exception {
-        Role role = new Role("ROLE_MODERATOR");
+        RoleDTO dto = new RoleDTO("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/roles").content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/roles").content(mapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
+                .andExpect(jsonPath("$.id").isNotEmpty())
                 .andExpect(status().isCreated());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenCreateRoleAsAdminThenReturnStatusIsBadRequest() throws Exception {
-        Role role = new Role();
+        RoleDTO dto = new RoleDTO();
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/roles").content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/roles").content(mapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -98,9 +100,9 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenCreateRoleAsAdminThenReturnStatusIsConflict() throws Exception {
-        Role role = new Role("ROLE_USER");
+        RoleDTO dto = new RoleDTO("ROLE_USER");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/roles").content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/roles").content(mapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isConflict());
     }
@@ -108,9 +110,9 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenCreateRoleAsUserThenReturnStatusIsForbidden() throws Exception {
-        Role role = new Role("ROLE_MODERATOR");
+        RoleDTO dto = new RoleDTO("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/roles").content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/roles").content(mapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -118,9 +120,9 @@ class RoleRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenCreateRoleAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        Role role = new Role("ROLE_MODERATOR");
+        RoleDTO dto = new RoleDTO("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/roles").content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/roles").content(mapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -129,7 +131,7 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenFindRoleByIdAsAdminThenReturnStatusIsOk() throws Exception {
-        mvc.perform(get("/roles/{id}", 1L))
+        mvc.perform(get("/api/roles/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -137,7 +139,7 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenFindRoleByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
-        mvc.perform(get("/roles/{id}", 3L))
+        mvc.perform(get("/api/roles/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -145,7 +147,7 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenFindRoleByIdAsUserThenReturnStatusIsForbidden() throws Exception {
-        mvc.perform(get("/roles/{id}", 1L))
+        mvc.perform(get("/api/roles/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -153,7 +155,7 @@ class RoleRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenFindRoleByIdAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        mvc.perform(get("/roles/{id}", 1L))
+        mvc.perform(get("/api/roles/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -162,9 +164,9 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsNoContent() throws Exception {
-        Role role = new Role("ROLE_MODERATOR");
+        RoleDTO dto = new RoleDTO("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/roles/{id}", 2L).content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/roles/{id}", 2L).content(mapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -172,9 +174,9 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsBadRequest() throws Exception {
-        Role role = new Role();
+        RoleDTO dto = new RoleDTO();
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/roles/{id}", 2L).content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/roles/{id}", 2L).content(mapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -182,9 +184,9 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsForbidden() throws Exception {
-        Role role = new Role("ROLE_MODERATOR");
+        RoleDTO dto = new RoleDTO("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/roles/{id}", 1L).content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/roles/{id}", 1L).content(mapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -192,9 +194,9 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateRoleByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
-        Role role = new Role("ROLE_MODERATOR");
+        RoleDTO dto = new RoleDTO("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/roles/{id}", 3L).content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/roles/{id}", 3L).content(mapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -202,9 +204,9 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenUpdateRoleByIdAsUserThenReturnStatusIsForbidden() throws Exception {
-        Role role = new Role("ROLE_MODERATOR");
+        RoleDTO dto = new RoleDTO("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/roles/{id}", 2L).content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/roles/{id}", 2L).content(mapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -212,9 +214,9 @@ class RoleRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenUpdateRoleByIdAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        Role role = new Role("ROLE_MODERATOR");
+        RoleDTO dto = new RoleDTO("ROLE_MODERATOR");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/roles/{id}", 2L).content(mapper.writeValueAsString(role)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/roles/{id}", 2L).content(mapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -223,7 +225,7 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenDeleteRoleByIdAsAdminThenReturnStatusIsNoContent() throws Exception {
-        mvc.perform(delete("/roles/{id}", 2L))
+        mvc.perform(delete("/api/roles/{id}", 2L))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -231,7 +233,7 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenDeleteRoleByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
-        mvc.perform(delete("/roles/{id}", 3L))
+        mvc.perform(delete("/api/roles/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -239,16 +241,15 @@ class RoleRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenDeleteRoleByIdAsAdminThenReturnStatusIsForbidden() throws Exception {
-        mvc.perform(delete("/roles/{id}", 1L))
+        mvc.perform(delete("/api/roles/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
 
-
     @Test
     @WithMockUser(roles = "USER")
     void testWhenDeleteRoleByIdAsUserThenReturnStatusIsForbidden() throws Exception {
-        mvc.perform(delete("/roles/{id}", 2L))
+        mvc.perform(delete("/api/roles/{id}", 2L))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -256,7 +257,7 @@ class RoleRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenDeleteRoleByIdAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        mvc.perform(delete("/roles/{id}", 2L))
+        mvc.perform(delete("/api/roles/{id}", 2L))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }

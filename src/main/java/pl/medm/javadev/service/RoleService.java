@@ -30,15 +30,17 @@ public class RoleService {
                 .collect(Collectors.toList());
     }
 
-    public RoleDTO createRole(Role role) {
-        if (roleRepository.existsByRole(role.getRole())) {
-            throw new ConflictException("Role conflict!");
+    public RoleDTO createRole(RoleDTO dto) {
+        if (roleRepository.existsByRole(dto.getRole())) {
+            throw new ConflictException("Conflict! Role '" + dto.getRole() + "' already exists.");
         }
-        roleRepository.save(role);
-        return roleMapper.roleToRoleDTO(role);
+        Role role = roleMapper.roleDTOToRole(dto);
+        role = roleRepository.save(role);
+        dto.setId(role.getId());
+        return dto;
     }
 
-    public RoleDTO findRoleById(long id) {
+    public RoleDTO findRoleById(Long id) {
         Optional<Role> searchResult = roleRepository.findById(id);
         if (!searchResult.isPresent()) {
             throw new NotFoundException("Role not found!");
@@ -48,28 +50,28 @@ public class RoleService {
                 .get();
     }
 
-    public void updateRoleById(long id, Role role) {
+    public void updateRoleById(Long id, RoleDTO dto) {
         Optional<Role> searchResult = roleRepository.findById(id);
         if (!searchResult.isPresent()) {
             throw new NotFoundException("Role not found!");
         }
-        if (roleRepository.existsByRole(role.getRole())) {
-            throw new ConflictException("Role conflict!");
+        if (roleRepository.existsByRole(dto.getRole())) {
+            throw new ConflictException("Conflict! Role: '" + dto.getRole() + "' already exists.");
         }
         if (searchResult.get().getRole().equals("ROLE_ADMIN")) {
-            throw new ForbiddenException("Forbidden!");
+            throw new ForbiddenException("Updating role 'ROLE_ADMIN' is not allowed!");
         }
-        searchResult.get().setRole(role.getRole());
+        searchResult.get().setRole(dto.getRole());
         roleRepository.save(searchResult.get());
     }
 
-    public void deleteRoleById(long id) {
+    public void deleteRoleById(Long id) {
         Optional<Role> searchResult = roleRepository.findById(id);
         if (!searchResult.isPresent()) {
             throw new NotFoundException("Role not found!");
         }
         if (searchResult.get().getRole().equals("ROLE_ADMIN")) {
-            throw new ForbiddenException("Forbidden!");
+            throw new ForbiddenException("Deleting role 'ROLE_ADMIN' is not allowed!");
         }
         roleRepository.deleteById(id);
     }
