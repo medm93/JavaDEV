@@ -16,6 +16,7 @@ import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import pl.medm.javadev.model.dto.LectureDTO;
 import pl.medm.javadev.model.entity.Lecture;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -53,7 +54,7 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenFindAllLecturesAsAdminThenReturnStatusIsOk() throws Exception {
-        mvc.perform(get("/lectures"))
+        mvc.perform(get("/api/lectures"))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -61,7 +62,7 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenFindAllLecturesAsUserThenReturnStatusIsOk() throws Exception {
-        mvc.perform(get("/lectures"))
+        mvc.perform(get("/api/lectures"))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -69,7 +70,7 @@ class LectureRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenFindAllLecturesAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        mvc.perform(get("/lectures"))
+        mvc.perform(get("/api/lectures"))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -78,9 +79,9 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenCreateLecturesAsAdminThenReturnStatusIsCreated() throws Exception {
-        Lecture lecture = new Lecture("Hibernate", "The basic of framework", "Howard Stark", false);
+        LectureDTO lecture = new LectureDTO("Hibernate", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated());
     }
@@ -88,9 +89,9 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenCreateLecturesAsAdminThenReturnStatusIsBadRequest() throws Exception {
-        Lecture lecture = new Lecture();
+        LectureDTO lecture = new LectureDTO();
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -99,9 +100,9 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenCreateLecturesAsAdminThenReturnStatusIsConflict() throws Exception {
-        Lecture lecture = new Lecture("Java 8", "The basic of language", "Howard Stark", false);
+        LectureDTO lecture = new LectureDTO("Java 8", "The basic of language", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isConflict());
     }
@@ -109,9 +110,9 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenCreateLecturesAsUserThenReturnStatusIsForbidden() throws Exception {
-        Lecture lecture = new Lecture("Spring", "The basic of framework", "Howard Stark", false);
+        LectureDTO lecture = new LectureDTO("Spring", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -119,9 +120,9 @@ class LectureRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenCreateLecturesAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        Lecture lecture = new Lecture("Spring", "The basic of framework", "Howard Stark", false);
+        LectureDTO lecture = new LectureDTO("Spring", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/lectures").content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -130,7 +131,7 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenFindLectureByIdAsAdminThenReturnStatusIsOk() throws Exception {
-        mvc.perform(get("/lectures/{id}", 1L))
+        mvc.perform(get("/api/lectures/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -138,7 +139,7 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenFindLectureByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
-        mvc.perform(get("/lectures/{id}", 3L))
+        mvc.perform(get("/api/lectures/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -147,7 +148,7 @@ class LectureRestControllerTest {
     @WithMockUser(roles = "USER")
     @Sql("/data-lecture-test.sql")
     void testWhenFindLectureByIdAsUserThenReturnStatusIsOk() throws Exception {
-        mvc.perform(get("/lectures/{id}", 1L))
+        mvc.perform(get("/api/lectures/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -155,7 +156,7 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenFindLectureByIdAsUserThenReturnStatusIsNotFound() throws Exception {
-        mvc.perform(get("/lectures/{id}", 3L))
+        mvc.perform(get("/api/lectures/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -163,7 +164,7 @@ class LectureRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenFindLectureByIdAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        mvc.perform(get("/lectures/{id}", 1L))
+        mvc.perform(get("/api/lectures/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -172,9 +173,9 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateLectureByIdAsAdminThenReturnStatusIsNoContent() throws Exception {
-        Lecture lecture = new Lecture("Hibernate", "The basic of framework", "Howard Stark", false);
+        LectureDTO lecture = new LectureDTO("Hibernate", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -183,9 +184,9 @@ class LectureRestControllerTest {
     @WithMockUser(roles = "ADMIN")
     @Sql("/data-lecture-test.sql")
     void testWhenUpdateLectureByIdAsAdminThenReturnStatusIsBadRequest() throws Exception {
-        Lecture lecture = new Lecture();
+        LectureDTO lecture = new LectureDTO();
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -193,9 +194,9 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateLectureByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
-        Lecture lecture = new Lecture("Hibernate", "The basic of framework", "Howard Stark", false);
+        LectureDTO lecture = new LectureDTO("Hibernate", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/lectures/{id}", 3L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/lectures/{id}", 3L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -204,9 +205,9 @@ class LectureRestControllerTest {
     @WithMockUser(roles = "ADMIN")
     @Sql("/data-lecture-test.sql")
     void testWhenUpdateLectureByIdAsAdminThenReturnStatusIsConflict() throws Exception {
-        Lecture lecture = new Lecture("Java 8", "The basic of language", "Howard Stark", true);
+        LectureDTO lecture = new LectureDTO("Java 8", "The basic of language", "Howard Stark", true);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isConflict());
     }
@@ -214,9 +215,9 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenUpdateLectureByIdAsUserThenReturnStatusIsForbidden() throws Exception {
-        Lecture lecture = new Lecture("Hibernate", "The basic of framework", "Howard Stark", false);
+        LectureDTO lecture = new LectureDTO("Hibernate", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -224,9 +225,9 @@ class LectureRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenUpdateLectureByIdAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        Lecture lecture = new Lecture("Hibernate", "The basic of framework", "Howard Stark", false);
+        LectureDTO lecture = new LectureDTO("Hibernate", "The basic of framework", "Howard Stark", false);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/lectures/{id}", 1L).content(mapper.writeValueAsString(lecture)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -235,7 +236,7 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenDeleteLectureByIdAsAdminThenReturnStatusInNoContent() throws Exception {
-        mvc.perform(delete("/lectures/{id}", 2L))
+        mvc.perform(delete("/api/lectures/{id}", 2L))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -243,7 +244,7 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenDeleteLectureByIdAsAdminThenReturnStatusInNotFound() throws Exception {
-        mvc.perform(delete("/lectures/{id}", 3L))
+        mvc.perform(delete("/api/lectures/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -252,7 +253,7 @@ class LectureRestControllerTest {
     @WithMockUser(roles = "ADMIN")
     @Sql("/data-lecture-test.sql")
     void testWhenDeleteLectureByIdAsAdminThenReturnStatusInForbidden() throws Exception {
-        mvc.perform(delete("/lectures/{id}", 1L))
+        mvc.perform(delete("/api/lectures/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -260,7 +261,7 @@ class LectureRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenDeleteLectureByIdAsUserThenReturnStatusInForbidden() throws Exception {
-        mvc.perform(delete("/lectures/{id}", 2L))
+        mvc.perform(delete("/api/lectures/{id}", 2L))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -268,7 +269,7 @@ class LectureRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenDeleteLectureByIdAsAnonymousUserThenReturnStatusInUnauthorized() throws Exception {
-        mvc.perform(delete("/lectures/{id}", 2L))
+        mvc.perform(delete("/api/lectures/{id}", 2L))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -278,16 +279,25 @@ class LectureRestControllerTest {
     @WithMockUser(roles = "ADMIN")
     @Sql({"/data-user-test.sql", "/data-lecture-test.sql", "/data-user-lecture-test.sql"})
     void testWhenFindAllLectureUsersByIdAsAdminThenReturnStatusInOk() throws Exception {
-        mvc.perform(get("/lectures/{id}/users", 1L))
+        mvc.perform(get("/api/lectures/{id}/users", 1L))
                 .andDo(print())
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @Sql({"/data-user-test.sql", "/data-lecture-test.sql", "/data-user-lecture-test.sql"})
+    void testWhenFindAllLectureUsersByIdAsAdminThenReturnStatusInNotFound() throws Exception {
+        mvc.perform(get("/api/lectures/{id}/users", 3L))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 
     @Test
     @WithMockUser(roles = "USER")
     @Sql({"/data-user-test.sql", "/data-lecture-test.sql", "/data-user-lecture-test.sql"})
     void testWhenFindAllLectureUsersByIdAsUserThenReturnStatusInForbidden() throws Exception {
-        mvc.perform(get("/lectures/{id}/users", 1L))
+        mvc.perform(get("/api/lectures/{id}/users", 1L))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -296,7 +306,7 @@ class LectureRestControllerTest {
     @WithAnonymousUser
     @Sql({"/data-user-test.sql", "/data-lecture-test.sql", "/data-user-lecture-test.sql"})
     void testWhenFindAllLectureUsersByIdAsAnonymousUserThenReturnStatusInUnauthorized() throws Exception {
-        mvc.perform(get("/lectures/{id}/users", 1L))
+        mvc.perform(get("/api/lectures/{id}/users", 1L))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }

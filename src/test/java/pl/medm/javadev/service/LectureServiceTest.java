@@ -1,6 +1,7 @@
 package pl.medm.javadev.service;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,8 +49,8 @@ class LectureServiceTest {
     @Test
     void testWhenFindAllLectures() {
         List<Lecture> lectures = Arrays.asList(
-                new Lecture(1L, "Java 8", "The basics of language", "Tony Stark", true),
-                new Lecture(2L, "Spring Boot", "The basics of framework", "Tony Stark", false)
+                new Lecture(1L, "Java 8", "The basics of language", "Howard Stark", true),
+                new Lecture(2L, "Spring", "The basics of framework", "Howard Stark", false)
         );
         when(lectureRepository.findAll()).thenReturn(lectures);
 
@@ -65,35 +66,36 @@ class LectureServiceTest {
     //CREATE LECTURES
     @Test
     void testWhenCreateLectureThenLectureConflict() {
-        Lecture lecture = new Lecture(1L, "Spring Boot", "The basics of framework", "Tony Stark", false);
+        LectureDTO dto = new LectureDTO("Spring Boot", "The basics of framework", "Tony Stark", false);
         when(lectureRepository.existsByTitle("Spring Boot")).thenReturn(true);
 
         Throwable exception = assertThrows(ConflictException.class, () ->
-                lectureService.createLecture(lecture)
+                lectureService.createLecture(dto)
         );
 
-        Assertions.assertEquals("Lecture conflict!", exception.getMessage());
+        Assertions.assertEquals("Conflict! Lecture title: Spring Boot is already busy.", exception.getMessage());
         verify(lectureRepository, times(1)).existsByTitle("Spring Boot");
-        verify(lectureRepository, times(0)).save(lecture);
+        verify(lectureRepository, times(0)).save(any(Lecture.class));
     }
 
     @Test
     void testWhenCreateLectureThenLectureNotConflict() {
-        Lecture lecture = new Lecture(1L, "Spring Boot", "The basics of framework", "Tony Stark", false);
-        when(lectureRepository.existsByTitle("Spring Boot")).thenReturn(false);
+        LectureDTO dto = new LectureDTO("Java 8", "The basics of language", "Howard Stark", false);
+        Lecture lecture = new Lecture(1L, "Java 8", "The basics of language", "Howard Stark", true);
+        when(lectureRepository.existsByTitle("Java 8")).thenReturn(false);
+        when(lectureRepository.save(any(Lecture.class))).thenReturn(lecture);
 
-        LectureDTO expected = lectureMapper.lectureToLectureDTO(lecture);
-        LectureDTO actual = lectureService.createLecture(lecture);
+        LectureDTO actual = lectureService.createLecture(dto);
 
-        Assertions.assertEquals(expected, actual);
-        verify(lectureRepository, times(1)).existsByTitle("Spring Boot");
-        verify(lectureRepository, times(1)).save(lecture);
+        Assertions.assertEquals(dto, actual);
+        verify(lectureRepository, times(1)).existsByTitle("Java 8");
+        verify(lectureRepository, times(1)).save(any(Lecture.class));
     }
 
     //FIND LECTURE BY ID
     @Test
     void testWhenFindLectureByIdThenLectureFound() {
-        Lecture lecture = new Lecture(1L, "Spring Boot", "The basics of framework", "Tony Stark", false);
+        Lecture lecture = new Lecture(1L, "Java 8", "The basics of language", "Howard Stark", true);
         when(lectureRepository.findById(1L)).thenReturn(java.util.Optional.of(lecture));
 
         LectureDTO expected = lectureMapper.lectureToLectureDTO(lecture);
@@ -118,43 +120,43 @@ class LectureServiceTest {
     //UPDATE LECTURE BY ID
     @Test
     void testWhenUpdateLectureByIdThenLectureFoundAndTitleConflict() {
-        Lecture lecture = new Lecture(1L, "Spring Boot", "The basics of framework", "Tony Stark", false);
-        Lecture updated = new Lecture("Java 8", "The basic of language", "James Bond", true);
+        Lecture lecture = new Lecture(1L, "Java 8", "The basics of language", "Howard Stark", true);
+        LectureDTO updated = new LectureDTO("Spring", "The basic of framework", "Howard Stark", false);
         when(lectureRepository.findById(1L)).thenReturn(Optional.of(lecture));
-        when(lectureRepository.existsByTitle("Java 8")).thenReturn(true);
+        when(lectureRepository.existsByTitle("Spring")).thenReturn(true);
 
         Throwable exception = assertThrows(ConflictException.class, () ->
                 lectureService.updateLectureById(1L, updated)
         );
 
-        Assertions.assertEquals("Lecture conflict!", exception.getMessage());
+        Assertions.assertEquals("Conflict! Lecture title: Spring is already busy.", exception.getMessage());
         verify(lectureRepository, times(1)).findById(1L);
-        verify(lectureRepository, times(1)).existsByTitle("Java 8");
+        verify(lectureRepository, times(1)).existsByTitle("Spring");
         verify(lectureRepository, times(0)).save(lecture);
 
     }
 
     @Test
     void testWhenUpdateLectureByIdThenLectureFoundAndTitleNotConflict() {
-        Lecture lecture = new Lecture(1L, "Spring Boot", "The basics of framework", "Tony Stark", false);
-        Lecture updated = new Lecture("Java 8", "The basic of language", "James Bond", true);
+        Lecture lecture = new Lecture(1L, "Java 8", "The basics of language", "Howard Stark", true);
+        LectureDTO updated = new LectureDTO("Spring", "The basic of framework", "Howard Stark", false);
         when(lectureRepository.findById(1L)).thenReturn(Optional.of(lecture));
-        when(lectureRepository.existsByTitle("Java 8")).thenReturn(false);
+        when(lectureRepository.existsByTitle("Spring")).thenReturn(false);
 
         lectureService.updateLectureById(1L, updated);
-        LectureDTO expected = new LectureDTO(1L, "Java 8", "The basic of language", "James Bond", true);
+        LectureDTO expected = new LectureDTO(1L, "Spring", "The basic of framework", "Howard Stark", false);
         LectureDTO actual = lectureService.findLectureById(1L);
 
         Assertions.assertEquals(expected, actual);
         verify(lectureRepository, times(2)).findById(1L);
-        verify(lectureRepository, times(1)).existsByTitle("Java 8");
+        verify(lectureRepository, times(1)).existsByTitle("Spring");
         verify(lectureRepository, times(1)).save(lecture);
     }
 
     @Test
     void testWhenUpdateLectureByIdThenLectureNotFound() {
-        Lecture lecture = new Lecture(1L, "Spring Boot", "The basics of framework", "Tony Stark", false);
-        Lecture updated = new Lecture("Java 8", "The basic of language", "James Bond", true);
+        Lecture lecture = new Lecture(1L, "Java 8", "The basics of language", "Howard Stark", true);
+        LectureDTO updated = new LectureDTO("Spring", "The basic of framework", "Howard Stark", false);
         when(lectureRepository.findById(1L)).thenReturn(Optional.empty());
 
         Throwable exception = assertThrows(NotFoundException.class, () ->
@@ -184,13 +186,13 @@ class LectureServiceTest {
 
     @Test
     void testWhenDeleteByIdThenLectureFoundAndNotCompleted() {
-        Lecture lecture = new Lecture(1L, "Spring Boot", "The basics of framework", "Tony Stark", false);
-        when(lectureRepository.findById(1L)).thenReturn(Optional.of(lecture));
+        Lecture lecture = new Lecture(2L, "Spring", "The basics of framework", "Howard Stark", false);
+        when(lectureRepository.findById(2L)).thenReturn(Optional.of(lecture));
 
-        lectureService.deleteLectureById(1L);
+        lectureService.deleteLectureById(2L);
 
-        verify(lectureRepository, times(1)).findById(1L);
-        verify(lectureRepository, times(1)).deleteById(1L);
+        verify(lectureRepository, times(1)).findById(2L);
+        verify(lectureRepository, times(1)).deleteById(2L);
     }
 
     @Test
@@ -226,7 +228,7 @@ class LectureServiceTest {
                 new User(2L, "Steven", "Rogers", "capitan.america@marvel.com", "zaq1@WSX",
                         "2", "Electronics", "000002")
         );
-        Lecture lecture = new Lecture(1L, "Spring Boot", "The basics of framework", "James Bond", false);
+        Lecture lecture = new Lecture(1L, "Java 8", "The basics of language", "Howard Stark", false);
         lecture.getUsers().addAll(users);
         when(lectureRepository.findById(1L)).thenReturn(Optional.of(lecture));
 

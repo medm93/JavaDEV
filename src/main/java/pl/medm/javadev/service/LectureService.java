@@ -36,15 +36,17 @@ public class LectureService {
                 .collect(Collectors.toList());
     }
 
-    public LectureDTO createLecture(Lecture lecture) {
-        if (lectureRepository.existsByTitle(lecture.getTitle())) {
-            throw new ConflictException("Lecture conflict!");
+    public LectureDTO createLecture(LectureDTO dto) {
+        if (lectureRepository.existsByTitle(dto.getTitle())) {
+            throw new ConflictException("Conflict! Lecture title: " + dto.getTitle() + " is already busy.");
         }
-        lectureRepository.save(lecture);
-        return lectureMapper.lectureToLectureDTO(lecture);
+        Lecture lecture = lectureMapper.lectureDTOToLecture(dto);
+        lecture = lectureRepository.save(lecture);
+        dto.setId(lecture.getId());
+        return dto;
     }
 
-    public LectureDTO findLectureById(long id) {
+    public LectureDTO findLectureById(Long id) {
         Optional<Lecture> searchResult = lectureRepository.findById(id);
         if (!searchResult.isPresent()) {
             throw new NotFoundException("Lecture not found!");
@@ -52,22 +54,22 @@ public class LectureService {
         return searchResult.map(lectureMapper::lectureToLectureDTO).get();
     }
 
-    public void updateLectureById(long id, Lecture lecture) {
+    public void updateLectureById(Long id, LectureDTO dto) {
         Optional<Lecture> searchResult = lectureRepository.findById(id);
         if (!searchResult.isPresent()) {
             throw new NotFoundException("Lecture not found!");
         }
-        if (lectureRepository.existsByTitle(lecture.getTitle())) {
-            throw new ConflictException("Lecture conflict!");
+        if (lectureRepository.existsByTitle(dto.getTitle())) {
+            throw new ConflictException("Conflict! Lecture title: " + dto.getTitle() + " is already busy.");
         }
-        searchResult.get().setTitle(lecture.getTitle());
-        searchResult.get().setDescription(lecture.getDescription());
-        searchResult.get().setLecturer(lecture.getLecturer());
-        searchResult.get().setCompleted(lecture.isCompleted());
+        searchResult.get().setTitle(dto.getTitle());
+        searchResult.get().setDescription(dto.getDescription());
+        searchResult.get().setLecturer(dto.getLecturer());
+        searchResult.get().setCompleted(dto.isCompleted());
         lectureRepository.save(searchResult.get());
     }
 
-    public void deleteLectureById(long id) {
+    public void deleteLectureById(Long id) {
         Optional<Lecture> searchResult = lectureRepository.findById(id);
         if (!searchResult.isPresent()) {
             throw new NotFoundException("Lecture not found!");
