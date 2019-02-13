@@ -14,7 +14,7 @@ import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import pl.medm.javadev.model.entity.User;
+import pl.medm.javadev.model.dto.UserDTO;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -52,7 +52,7 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenFindAllUsersAsAdminThenReturnStatusIsOk() throws Exception {
-        mvc.perform(get("/users"))
+        mvc.perform(get("/api/users"))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -60,7 +60,7 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenFindAllUsersAsUserThenReturnStatusIsForbidden() throws Exception {
-        mvc.perform(get("/users"))
+        mvc.perform(get("/api/users"))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -68,7 +68,7 @@ class UserRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenFindAllUsersAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        mvc.perform(get("/users"))
+        mvc.perform(get("/api/users"))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -77,9 +77,11 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenCreateUserAsAdminThenReturnStatusInCreated() throws Exception {
-        User user = new User("Bruce", "Banner", "hulk@marvel.com", "zaq1@WSX", "3", "Informatics", "000003");
+        UserDTO user = new UserDTO("Bruce", "Banner", "hulk@marvel.com", "zaq1@WSX", "3", "Informatics", "000003");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/users").content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        String aaa = mapper.writeValueAsString(user);
+        System.err.println(mapper.writeValueAsString(user));
+        mvc.perform(post("/api/users").content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNotEmpty());
@@ -88,9 +90,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenCreateUserAsAdminThenReturnStatusInBadRequest() throws Exception {
-        User user = new User();
+        UserDTO user = new UserDTO();
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/users").content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/users").content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -98,9 +100,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenCreateUserAsAdminThenReturnStatusInConflict() throws Exception {
-        User user = new User("Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX", "1", "Informatics", "123456");
+        UserDTO user = new UserDTO("Clint", "Barton", "hawkeye@marvel.com", "zaq1@WSX", "1", "Informatics", "123456");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/users").content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/users").content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isConflict());
     }
@@ -108,9 +110,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenCreateUserAsUserThenReturnStatusInForbidden() throws Exception {
-        User user = new User("Bruce", "Banner", "hulk@marvel.com", "zaq1@WSX", "3", "Informatics", "000003");
+        UserDTO user = new UserDTO("Bruce", "Banner", "hulk@marvel.com", "zaq1@WSX", "3", "Informatics", "000003");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/users").content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/users").content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -118,9 +120,9 @@ class UserRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenCreateUserAsAnonymousUserThenReturnStatusInUnauthorized() throws Exception {
-        User user = new User("Bruce", "Banner", "hulk@marvel.com", "zaq1@WSX", "3", "Informatics", "000003");
+        UserDTO user = new UserDTO("Bruce", "Banner", "hulk@marvel.com", "zaq1@WSX", "3", "Informatics", "000003");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(post("/users").content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/api/users").content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -129,7 +131,7 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenFindUserByIdAsAdminThenReturnStatusIsOk() throws Exception {
-        mvc.perform(get("/users/{id}", 1L))
+        mvc.perform(get("/api/users/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -137,7 +139,7 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenFindUserByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
-        mvc.perform(get("/users/{id}", 3L))
+        mvc.perform(get("/api/users/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -145,7 +147,7 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenFindUserByIdAsUserThenReturnStatusIsOk() throws Exception {
-        mvc.perform(get("/users/{id}", 1L))
+        mvc.perform(get("/api/users/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -153,7 +155,7 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenFindUserByIdAsUserThenReturnStatusIsNotFound() throws Exception {
-        mvc.perform(get("/users/{id}", 3L))
+        mvc.perform(get("/api/users/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -161,7 +163,7 @@ class UserRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenFindUserByIdAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        mvc.perform(get("/users/{id}", 1L))
+        mvc.perform(get("/api/users/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -170,9 +172,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateUserAsAdminThenReturnStatusIsNoContent() throws Exception {
-        User user = new User("Bruce", "Banner", "hulk@marvel.com", null, "3", "Informatics", "000003");
+        UserDTO user = new UserDTO("Bruce", "Banner", "hulk@marvel.com", null, "3", "Informatics", "000003");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -180,9 +182,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateUserAsAdminThenReturnStatusIsBadRequest() throws Exception {
-        User user = new User();
+        UserDTO user = new UserDTO();
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -190,9 +192,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateUserAsAdminThenReturnStatusIsConflict() throws Exception {
-        User user = new User("Steven", "Rogers", "capitan.america@marvel.com", null, "2", "Electronics", "000002");
+        UserDTO user = new UserDTO("Steven", "Rogers", "capitan.america@marvel.com", null, "2", "Electronics", "000002");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isConflict());
     }
@@ -200,9 +202,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateUserAsAdminThenReturnStatusIsNotFound() throws Exception {
-        User user = new User("Bruce", "Banner", "hulk@marvel.com", null, "3", "Informatics", "000003");
+        UserDTO user = new UserDTO("Bruce", "Banner", "hulk@marvel.com", null, "3", "Informatics", "000003");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}", 3L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}", 3L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -210,9 +212,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenUpdateUserAsUserThenReturnStatusIsNoContent() throws Exception {
-        User user = new User("Bruce", "Banner", "hulk@marvel.com", null, "3", "Informatics", "000003");
+        UserDTO user = new UserDTO("Bruce", "Banner", "hulk@marvel.com", null, "3", "Informatics", "000003");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -220,9 +222,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenUpdateUserAsUserThenReturnStatusIsBadRequest() throws Exception {
-        User user = new User();
+        UserDTO user = new UserDTO();
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -230,9 +232,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenUpdateUserAsUserThenReturnStatusIsConflict() throws Exception {
-        User user = new User("Steven", "Rogers", "capitan.america@marvel.com", null, "2", "Electronics", "000002");
+        UserDTO user = new UserDTO("Steven", "Rogers", "capitan.america@marvel.com", null, "2", "Electronics", "000002");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isConflict());
     }
@@ -240,9 +242,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenUpdateUserAsUserThenReturnStatusIsNotFound() throws Exception {
-        User user = new User("Bruce", "Banner", "hulk@marvel.com", null, "3", "Informatics", "000003");
+        UserDTO user = new UserDTO("Bruce", "Banner", "hulk@marvel.com", null, "3", "Informatics", "000003");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}", 3L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}", 3L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -250,9 +252,9 @@ class UserRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenUpdateUserAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        User user = new User("Bruce", "Banner", "hulk@marvel.com", null, "3", "Informatics", "000003");
+        UserDTO user = new UserDTO("Bruce", "Banner", "hulk@marvel.com", null, "3", "Informatics", "000003");
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -261,9 +263,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateUserPasswordByIdAsAdminThenReturnStatusInNoContent() throws Exception {
-        User user = new User(null, null, null, "xsw2!QAZ", null, null, null);
+        UserDTO user = new UserDTO(null, null, null, "xsw2!QAZ", null, null, null);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}/password", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}/password", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -271,9 +273,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateUserPasswordByIdAsAdminThenReturnStatusInBadRequest() throws Exception {
-        User user = new User();
+        UserDTO user = new UserDTO();
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}/password", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}/password", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -281,9 +283,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenUpdateUserPasswordByIdAsAdminThenReturnStatusInNotFound() throws Exception {
-        User user = new User(null, null, null, "xsw2!QAZ", null, null, null);
+        UserDTO user = new UserDTO(null, null, null, "xsw2!QAZ", null, null, null);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}/password", 3L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}/password", 3L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -291,9 +293,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenUpdateUserPasswordByIdAsUserThenReturnStatusInNoContent() throws Exception {
-        User user = new User(null, null, null, "xsw2!QAZ", null, null, null);
+        UserDTO user = new UserDTO(null, null, null, "xsw2!QAZ", null, null, null);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}/password", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}/password", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -301,9 +303,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenUpdateUserPasswordByIdAsUserThenReturnStatusInBadRequest() throws Exception {
-        User user = new User();
+        UserDTO user = new UserDTO();
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}/password", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}/password", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -311,9 +313,9 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenUpdateUserPasswordByIdAsUserThenReturnStatusInNotFound() throws Exception {
-        User user = new User(null, null, null, "xsw2!QAZ", null, null, null);
+        UserDTO user = new UserDTO(null, null, null, "xsw2!QAZ", null, null, null);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}/password", 3L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}/password", 3L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -321,9 +323,9 @@ class UserRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenUpdateUserPasswordByIdAsAnonymousUserThenReturnStatusInUnauthorized() throws Exception {
-        User user = new User(null, null, null, "xsw2!QAZ", null, null, null);
+        UserDTO user = new UserDTO(null, null, null, "xsw2!QAZ", null, null, null);
         ObjectMapper mapper = new ObjectMapper();
-        mvc.perform(put("/users/{id}/password", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(put("/api/users/{id}/password", 1L).content(mapper.writeValueAsString(user)).contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -332,7 +334,7 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenDeleteUserByIdAsAdminThenReturnStatusInNoContent() throws Exception {
-        mvc.perform(delete("/users/{id}", 1L))
+        mvc.perform(delete("/api/users/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -340,7 +342,7 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void testWhenDeleteUserByIdAsAdminThenReturnStatusInNotFound() throws Exception {
-        mvc.perform(delete("/users/{id}", 3L))
+        mvc.perform(delete("/api/users/{id}", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -348,7 +350,7 @@ class UserRestControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testWhenDeleteUserByIdAsUserThenReturnStatusInForbidden() throws Exception {
-        mvc.perform(delete("/users/{id}", 1L))
+        mvc.perform(delete("/api/users/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -356,7 +358,7 @@ class UserRestControllerTest {
     @Test
     @WithAnonymousUser
     void testWhenDeleteUserByIdAsAnonymousUserThenReturnStatusInUnauthorized() throws Exception {
-        mvc.perform(delete("/users/{id}", 1L))
+        mvc.perform(delete("/api/users/{id}", 1L))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -366,7 +368,7 @@ class UserRestControllerTest {
     @WithMockUser(roles = "ADMIN")
     @Sql({"/data-user-test.sql", "/data-lecture-test.sql", "/data-user-lecture-test.sql"})
     void testWhenFindAllUserLecturesByIdAsAdminThenReturnStatusIsOk() throws Exception {
-        mvc.perform(get("/users/{id}/lectures", 1L))
+        mvc.perform(get("/api/users/{id}/lectures", 1L))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -375,7 +377,7 @@ class UserRestControllerTest {
     @WithMockUser(roles = "ADMIN")
     @Sql({"/data-user-test.sql", "/data-lecture-test.sql", "/data-user-lecture-test.sql"})
     void testWhenFindAllUserLecturesByIdAsAdminThenReturnStatusIsNotFound() throws Exception {
-        mvc.perform(get("/users/{id}/lectures", 3L))
+        mvc.perform(get("/api/users/{id}/lectures", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -384,7 +386,7 @@ class UserRestControllerTest {
     @WithMockUser(roles = "USER")
     @Sql({"/data-user-test.sql", "/data-lecture-test.sql", "/data-user-lecture-test.sql"})
     void testWhenFindAllUserLecturesByIdAsUserThenReturnStatusIsOk() throws Exception {
-        mvc.perform(get("/users/{id}/lectures", 1L))
+        mvc.perform(get("/api/users/{id}/lectures", 1L))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -393,7 +395,7 @@ class UserRestControllerTest {
     @WithMockUser(roles = "USER")
     @Sql({"/data-user-test.sql", "/data-lecture-test.sql", "/data-user-lecture-test.sql"})
     void testWhenFindAllUserLecturesByIdAsUserThenReturnStatusIsNotFound() throws Exception {
-        mvc.perform(get("/users/{id}/lectures", 3L))
+        mvc.perform(get("/api/users/{id}/lectures", 3L))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -402,7 +404,7 @@ class UserRestControllerTest {
     @WithAnonymousUser
     @Sql({"/data-user-test.sql", "/data-lecture-test.sql", "/data-user-lecture-test.sql"})
     void testWhenFindAllUserLecturesByIdAsAnonymousUserThenReturnStatusIsUnauthorized() throws Exception {
-        mvc.perform(get("/users/{id}/lectures", 3L))
+        mvc.perform(get("/api/users/{id}/lectures", 3L))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }

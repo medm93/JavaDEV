@@ -64,8 +64,9 @@ public class RoleRestController {
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Object> findRoleById(@PathVariable Long id) {
         try {
+            RoleDTO role = roleService.findRoleById(id);
             log.info("Role [id={} found", id);
-            return ResponseEntity.ok(roleService.findRoleById(id));
+            return ResponseEntity.ok(role);
         } catch (NotFoundException e) {
             log.error("Role [id={}] not found", id, e);
             return ResponseEntity.notFound().build();

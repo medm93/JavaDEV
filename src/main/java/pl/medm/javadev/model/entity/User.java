@@ -1,5 +1,6 @@
 package pl.medm.javadev.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import pl.medm.javadev.constraint.Password;
 import pl.medm.javadev.constraint.group.BasicData;
@@ -20,32 +21,21 @@ import java.util.Set;
 @Entity
 @Data
 @NoArgsConstructor
-public class User implements Serializable {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotEmpty(groups = BasicData.class)
     @Column(name = "first_name")
     private String firstName;
-    @NotEmpty(groups = BasicData.class)
     @Column(name = "last_name")
     private String lastName;
-    @Email(groups = BasicData.class)
-    @NotEmpty(groups = BasicData.class)
     private String email;
-    @Password(groups = PasswordData.class)
     private String password;
-    @Size(min = 1, max = 1, groups = StudiesData.class)
-    @Pattern(regexp = "^[0-5]+$", groups = StudiesData.class)
     @Column(name = "year_of_study")
     private String yearOfStudy;
-    @Size(min = 5, groups = StudiesData.class)
-    @Pattern(regexp = "^[a-zA-Z]+$", groups = StudiesData.class)
     @Column(name = "field_of_study")
     private String fieldOfStudy;
-    @Size(min = 6, max = 6, groups = StudiesData.class)
-    @Pattern(regexp = "^[0-9]+$", groups = StudiesData.class)
     @Column(name = "index_number")
     private String indexNumber;
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
@@ -56,7 +46,7 @@ public class User implements Serializable {
     )
     private List<Lecture> lectures = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(
             name = "user_role",
             joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
@@ -75,7 +65,7 @@ public class User implements Serializable {
         this.indexNumber = indexNumber;
     }
 
-    public User(long id, String firstName, String lastName, String email, String password, String yearOfStudy,
+    public User(Long id, String firstName, String lastName, String email, String password, String yearOfStudy,
                 String fieldOfStudy, String indexNumber) {
         this.id = id;
         this.firstName = firstName;

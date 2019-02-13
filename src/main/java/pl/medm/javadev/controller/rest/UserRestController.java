@@ -1,6 +1,8 @@
 package pl.medm.javadev.controller.rest;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -14,12 +16,15 @@ import pl.medm.javadev.model.dto.LectureDTO;
 import pl.medm.javadev.model.dto.UserDTO;
 import pl.medm.javadev.model.entity.User;
 import pl.medm.javadev.service.UserService;
+import pl.medm.javadev.utils.exception.ConflictException;
+import pl.medm.javadev.utils.exception.NotFoundException;
 
 import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
+@Log4j2
 public class UserRestController {
 
     private final UserService userService;
@@ -32,63 +37,114 @@ public class UserRestController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Object> findAllUsers() {
-        return ResponseEntity.ok(userService.findAllUsers());
+        List<UserDTO> users = userService.findAllUsers();
+        log.info("Received {} results for users search", users.size());
+        return ResponseEntity.ok(users);
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<Object> createUser(@Validated(CreateUser.class) @RequestBody User user,
-                                             BindingResult result) {
-        if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body(result.getAllErrors());
+    public ResponseEntity<Object> createUser(@Validated(CreateUser.class) @RequestBody UserDTO dto, BindingResult result) {
+        try {
+            if (result.hasErrors()) {
+                log.warn("User validate failed");
+                return ResponseEntity.badRequest().body(result.getAllErrors());
+            }
+            dto = userService.createUser(dto);
+            URI location = ServletUriComponentsBuilder
+                    .fromCurrentRequest()
+                    .path("/{id}")
+                    .buildAndExpand(dto.getId())
+                    .toUri();
+            log.info("User [id={}] created", dto.getId());
+            return ResponseEntity.created(location).body(dto);
+        } catch (ConflictException e) {
+            log.error("Conflict! Email {} or index number {} is already busy.", dto.getEmail(), dto.getIndexNumber(), e);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        UserDTO userDTO = userService.createUser(user);
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(userDTO.getId())
-                .toUri();
-        return ResponseEntity.created(location).body(userDTO);
     }
 
     @GetMapping(path = "/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Object> findUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.findUserById(id));
+        try {
+            UserDTO user = userService.findUserById(id);
+            log.info("User [id={} found", id);
+            return ResponseEntity.ok(user);
+        } catch (NotFoundException e) {
+            log.error("User [id={}] not found", id, e);
+            return ResponseEntity.notFound().build();
+        }
+
+
+
     }
 
     @PutMapping(path = "/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Object> updateUserById(@PathVariable Long id, @Validated(UpdateUser.class) @RequestBody User user,
-                                                 BindingResult result) {
-        if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body(result.getAllErrors());
+    public ResponseEntity<Object> updateUserById(@PathVariable Long id, @Validated(UpdateUser.class) @RequestBody UserDTO dto, BindingResult result) {
+        try {
+            if (result.hasErrors()) {
+                log.warn("User validate failed");
+                return ResponseEntity.badRequest().body(result.getAllErrors());
+            }
+            userService.updateUserById(id, dto);
+            log.info("User [id={}] updated", id);
+            return ResponseEntity.noContent().build();
+        } catch (NotFoundException e) {
+            log.error("User [id={}] not found", id, e);
+            return ResponseEntity.notFound().build();
+        } catch (ConflictException e) {
+            log.error("Conflict! Email {} or index number {} is already busy.", dto.getEmail(), dto.getIndexNumber(), e);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        userService.updateUserById(id, user);
-        return ResponseEntity.noContent().build();
     }
 
     @PutMapping(path = "/{id}/password")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Object> updateUserPasswordById(@PathVariable Long id, @Validated(PasswordData.class) @RequestBody User user,
-                                                         BindingResult result) {
-        if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body(result.getAllErrors());
+    public ResponseEntity<Object> updateUserPasswordById(@PathVariable Long id, @Validated(PasswordData.class) @RequestBody UserDTO dto, BindingResult result) {
+        try {
+            if (result.hasErrors()) {
+                log.warn("User password validate failed");
+                return ResponseEntity.badRequest().body(result.getAllErrors());
+            }
+            userService.updateUserPasswordById(id, dto);
+            log.info("User password [id={}] updated", id);
+            return ResponseEntity.noContent().build();
+        } catch (NotFoundException e) {
+            log.error("User [id={}] not found", id, e);
+            return ResponseEntity.notFound().build();
         }
-        userService.updateUserPasswordById(id, user);
-        return ResponseEntity.noContent().build();
+
     }
 
     @DeleteMapping(path = "/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Object> deleteUserById(@PathVariable Long id) {
-        userService.deleteUserById(id);
-        return ResponseEntity.noContent().build();
+        try {
+            userService.deleteUserById(id);
+            log.info("User password [id={}] updated", id);
+            return ResponseEntity.noContent().build();
+        } catch (NotFoundException e) {
+            log.error("User [id={}] not found", id, e);
+            return ResponseEntity.notFound().build();
+        }
+
+
     }
 
     @GetMapping(path = "/{id}/lectures")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<List<LectureDTO>> findAllLecturesByUserId(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.findAllUserLecturesById(id));
+    public ResponseEntity<Object> findAllLecturesByUserId(@PathVariable Long id) {
+        try {
+            List<LectureDTO> lectures = userService.findAllUserLecturesById(id);
+            log.info("Received {} results for user lectures search", lectures.size());
+            return ResponseEntity.ok(lectures);
+        } catch (NotFoundException e) {
+            log.error("User [id={}] not found", id, e);
+            return ResponseEntity.notFound().build();
+        }
+
+
     }
 }
